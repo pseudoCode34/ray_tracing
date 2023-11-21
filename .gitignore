@@ -1,0 +1,65 @@
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.exe
+*.out
+*.app
+
+# MacOS
+.DS_Store
+*.dSYM
+
+# Build folders
+Debug
+Release
+AppleClangBuild
+XcodeBuild
+
+# CMake cache
+.cache
+compile_commands.json
+
+# include-what-you-use generated files and folders
+iwyu.out
+build-iwyu
+
+# logs
+logs
+
+# Docs generated from Doxygen
+docs
+
+# Qt generated file
+CMakeLists.txt.user 
+
+# images output
+images
+
+# binary executable folders
+bin
