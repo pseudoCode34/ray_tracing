@@ -1,6 +1,3 @@
-# target_link_libraries(app PRIVATE modern_library fmt::fmt)
-
-# file(GLOB HEADER_LIST CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/*.hpp")
 set(EXAMPLE_FILES
     all_unit_tests.cpp
     bit_donut.cpp
@@ -14,8 +11,7 @@ set(EXAMPLE_FILES
     set_intersection.cpp
     sphere.cpp
     spheroid.cpp
-    torus.cpp
-)
+    torus.cpp)
 
 add_library(Example ${EXAMPLE_FILES})
 
@@ -29,8 +25,7 @@ target_compile_options(
             -Wextra
             -Wpedantic>)
 # Assuming this is meant to be a public directory
-target_include_directories(Example PUBLIC ${PROJECT_SOURCE_DIR}/src
-                                          ${PROJECT_SOURCE_DIR}/third_party)
+target_include_directories(Example PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(Example Algebra Imager lodepng fmt::fmt-header-only)
+target_link_libraries(Example Algebra lodepng Imager fmt::fmt-header-only)
 # add_dependencies(Example lodepng)

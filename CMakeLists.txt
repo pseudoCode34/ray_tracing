@@ -4,7 +4,7 @@ project(
     Ray_tracing
     LANGUAGES CXX
     VERSION 0.255
-	DESCRIPTION "A C++ project to draw graphical images")
+    DESCRIPTION "A C++ project to draw graphical images")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -17,60 +17,37 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
-set(CMAKE_BUILD_TYPE Debug)
+if(NOT CMAKE_BUILD_TYPE)
+    set(CMAKE_BUILD_TYPE "Debug")
+endif()
 
-# find_program(IWYU_PATH NAMES include-what-you-use iwyu)
-# if(NOT IWYU_PATH)
-#     message(FATAL_ERROR "Could not find the program include-what-you-use")
-# endif()
-# set(CMAKE_CXX_INCLUDE_WHAT_YOU_USE "include-what-you-use")
+# guard against in-source builds
 
-# Only do these if this is the main project, and not if it is included through
-# add_subdirectory
-# if(CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME)
-#     # Optionally set things like CMAKE_CXX_STANDARD,
-#     # CMAKE_POSITION_INDEPENDENT_CODE here
+if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
+    message(
+        FATAL_ERROR
+            "In-source builds not allowed. Please make a new directory (called a build directory) and run CMake from there. You may need to remove CMakeCache.txt. "
+    )
+endif()
 
-#     # Let's nicely support folders in IDEs
-#     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+include(FetchContent)
+include(cmake/FindFmt.cmake)
+include(cmake/FindLodePNG.cmake)
+include(cmake/FindSpdlog.cmake)
+include(cmake/FindRange-v3.cmake)
+include(cmake/FindGoogleTest.cmake)
+include(cmake/FindClangFormat.cmake)
+include(cmake/FindBoostMath.cmake)
+include(cmake/FindEigen.cmake)
 
-#     # Docs only available if this is the main app
-#     find_package(Doxygen)
-#     if(Doxygen_FOUND)
-#         add_subdirectory(docs)
-#     else()
-#         message(STATUS "Doxygen not found, not building docs")
-#     endif()
+if(PROJECT_IS_TOP_LEVEL)
+    set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
 
-#     find_package(fmt REQUIRED COMPONENTS)
-# 	if(NOT fmt_FOUND)
-# 		message(STATUS "Libfmt not found, not building docs")
-#     endif()
+    enable_testing()
+    # Testing only available if this is the main app.
+    add_subdirectory(tests)
+endif()
 
-#     find_package(spdlog REQUIRED COMPONENTS)
-# 	if(NOT spdlog_FOUND)
-# 		message(STATUS "Spdlog not found, not building docs")
-#     endif()
-
-#     find_package(range-v3 REQUIRED COMPONENTS)
-# 	if(NOT range-v3_FOUND)
-# 		message(STATUS "range-v3 not found, not building docs")
-#     endif()
-# endif()
-
-include(ExternalProject)
-
-add_subdirectory(third_party)
 add_subdirectory(src)
 add_subdirectory(app)
 add_subdirectory(examples)
-
-add_subdirectory(tests)
-# # Testing only available if this is the main app.
-# # Emergency override MODERN_CMAKE_BUILD_TESTING provided as well
-# if((CMAKE_PROJECT_NAME STREQUAL PROJECT_NAME OR MODERN_CMAKE_BUILD_TESTING)
-#    AND BUILD_TESTING)
-# 	# enable_testing()
-
-#     add_subdirectory(tests)
-# endif()

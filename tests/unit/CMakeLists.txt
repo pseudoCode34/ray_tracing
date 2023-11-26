@@ -1,13 +1,12 @@
 add_subdirectory(lodepng)
 
-enable_testing()
-
 # Add a target for unit tests
 add_executable(
     unit_test
     # EXCLUDE_FROM_ALL
     # algebra/algebra_test.cpp
     algebra/quadratic_test.cpp
+    algebra/linear_equation_system.cpp
     algebra/cubic_test.cpp
     algebra/complex_test.cpp
     color/color_test.cpp
@@ -18,8 +17,14 @@ add_executable(
 
 # Link the unit_test target with GoogleTest
 target_link_libraries(
-    unit_test gtest gtest_main GTest::gmock pthread # pthread is needed on
-                                                    # Unix-like systems
+    unit_test
+	PRIVATE
+    GTest::gtest
+    GTest::gtest_main
+    GTest::gmock
+    pthread # pthread is needed on Unix-like systems
+	Boost::math
+	eigen
     Imager)
 
 target_include_directories(unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
