@@ -1,4 +1,4 @@
-#include "lodepng/lodepng.h"
+#include "lodepng.h"
 
 #include <fmt/format.h>
 #include <gtest/gtest.h>
@@ -8,9 +8,7 @@
 // The image argument has width * height RGBA pixels or width * height * 4 bytes
 void encode_one_step(const char *filename, std::vector<unsigned char> &image,
 					 unsigned width, unsigned height) {
-	unsigned error = lodepng::encode(filename, image, width, height);
-
-	if (error)
+	if (auto error = lodepng::encode(filename, image, width, height))
 		throw std::runtime_error(fmt::format("Encoder error {}: {}",
 											 error,
 											 lodepng_error_text(error)));

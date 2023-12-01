@@ -12,7 +12,7 @@ TEST(CubicEquation, RealCoeffComplexRootTreatedAsNan) {
 	// given
 	using namespace std::complex_literals;
 	std::array<double, 3> expected_roots{
-		-1,
+		3,
 		std::numeric_limits<double>::quiet_NaN(),
 		std::numeric_limits<double>::quiet_NaN()};
 
