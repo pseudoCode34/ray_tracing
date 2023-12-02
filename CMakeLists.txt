@@ -1,9 +1,9 @@
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.24)
 
 project(
     Ray_tracing
     LANGUAGES CXX
-    VERSION 0.255
+    VERSION 0.1
     DESCRIPTION "A C++ project to draw graphical images")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
@@ -14,8 +14,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/bin)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
 
 if(NOT CMAKE_BUILD_TYPE)
     set(CMAKE_BUILD_TYPE "Debug")
@@ -51,3 +49,4 @@ endif()
 add_subdirectory(src)
 add_subdirectory(app)
 add_subdirectory(examples)
+file(MAKE_DIRECTORY images)

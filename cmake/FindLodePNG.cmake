@@ -5,5 +5,6 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS)
 
 FetchContent_MakeAvailable(lodepng)
+
+add_library(lodepng ${lodepng_SOURCE_DIR}/lodepng.cpp)
 include_directories(${lodepng_SOURCE_DIR})
-add_library(lodepng STATIC ${lodepng_SOURCE_DIR}/lodepng.cpp)
