@@ -1,9 +1,8 @@
 #include "scene.hpp"
 
-#include "algebra.hpp"
 #include "imager.hpp"
 #include "imager_buffer.hpp"
-#include "lodepng/lodepng.h"
+#include "lodepng.h"
 #include "optical_constants.hpp"
 #include "optics.hpp"
 #include "refraction_constants.hpp"
@@ -11,6 +10,7 @@
 #include "vector.hpp"
 
 #include <algorithm>
+#include <boost/math/tools/roots.hpp>
 #include <cassert>
 #include <cmath>
 #include <exception>
@@ -23,7 +23,24 @@
 #include <range/v3/view/join.hpp>
 #include <range/v3/view/transform.hpp>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/spdlog.h>
+#include <utility>
 #include <vector>
+
+auto fmt::formatter<raytracing::Imager::RayTracingError>::format(
+	raytracing::Imager::RayTracingError error, format_context &ctx) const {
+	using enum raytracing::Imager::RayTracingError;
+	std::string_view name;
+
+	switch (error) {
+	case MULTIPLE_MIN_DISTANCE: name = "MULTIPLE_MIN_DISTANCE"; break;
+	case UNDEFINED_SOLID: name = "UNDEFINED_SOLID"; break;
+	case REFRACTION_FAILURE: name = "REFRACTION_FAILURE"; break;
+	default: std::unreachable();
+	}
+
+	return formatter<string_view>::format(name, ctx);
+}
 
 namespace raytracing {
 namespace Imager {
@@ -66,9 +83,10 @@ inline bool is_significant(const Color &color) {
 		   || color.blue >= optical::MIN_INTENSITY;
 }
 
-Color Scene::trace_ray(const Vector &vantage, const Vector &direction,
-					   double refractive_index, const Color &ray_intensity,
-					   int recursion_depth = 0) const {
+std::expected<Color, RayTracingError>
+Scene::trace_ray(const Vector &vantage, const Vector &direction,
+				 double refractive_index, const Color &ray_intensity,
+				 int recursion_depth = 0) const {
 	const auto &[closest, status]
 		= find_closest_intersection(vantage, direction);
 
@@ -89,8 +107,7 @@ Color Scene::trace_ray(const Vector &vantage, const Vector &direction,
 								  ray_intensity,
 								  recursion_depth + 1);
 	case IntersectionResultType::AMBIGIOUS:
-		throw AmbiguousIntersectionException(
-			"More than one intersection has the same minimium distance.");
+		return std::unexpected(RayTracingError::MULTIPLE_MIN_DISTANCE);
 	}
 }
 
@@ -98,11 +115,11 @@ bool is_recursion_limit_exceeded(int recursion_depth) {
 	return recursion_depth > optical::RECURSION_LIMIT;
 }
 
-Color Scene::calculate_lighting(const Intersection &intersection,
-								const Vector &direction,
-								double refractive_index,
-								const Color &ray_intensity,
-								int recursion_depth) const {
+std::expected<Color, RayTracingError>
+Scene::calculate_lighting(const Intersection &intersection,
+						  const Vector &direction, double refractive_index,
+						  const Color &ray_intensity,
+						  int recursion_depth) const {
 	Color color_sum;
 
 #if RAYTRACE_DEBUG_POINTS
@@ -139,9 +156,9 @@ Color Scene::calculate_lighting(const Intersection &intersection,
 	const auto &[distance_squared, point, surface_normal, solid, context, tag]
 		= intersection;
 	if (!solid)
-		// If we get here, it means some derived class forgot to initialize
-		// intersection.solid before appending to the intersection list.
-		throw ImagerException("Undefined solid at intersection.");
+		// Some derived class forgot to initialize intersection.solid before
+		// appending to the intersection list.
+		return std::unexpected(RayTracingError::UNDEFINED_SOLID);
 
 	// Determine the optical properties at the specified point on whatever solid
 	// object the ray intersected with.
@@ -182,14 +199,16 @@ Color Scene::calculate_lighting(const Intersection &intersection,
 		// Note that only the 'transparent' part of the light is available
 		// for refraction and refractive reflection.
 
+		// FIXME: Error handling the std::expected
 		color_sum += calculate_refraction(
-			intersection,
-			direction,
-			refractive_index,
-			TRANSPARENCY * ray_intensity,
-			recursion_depth,
-			refractive_reflection_factor // output parameter
-		);
+						 intersection,
+						 direction,
+						 refractive_index,
+						 TRANSPARENCY * ray_intensity,
+						 recursion_depth,
+						 refractive_reflection_factor // output parameter
+						 )
+						 .value();
 	}
 
 	// There are 2 sources of shiny reflection in need of considering together:
@@ -212,13 +231,15 @@ Color Scene::calculate_lighting(const Intersection &intersection,
 	reflection_color *= ray_intensity;
 
 	if (is_significant(reflection_color)) {
-		const Color MATTE_COLOR = calculate_reflection(intersection,
-													   direction,
-													   refractive_index,
-													   reflection_color,
-													   recursion_depth);
+		auto matte_color = calculate_reflection(intersection,
+												direction,
+												refractive_index,
+												reflection_color,
+												recursion_depth);
 
-		color_sum += MATTE_COLOR;
+		// FIXME: Use monadic operations here
+		if (!matte_color.has_value()) return matte_color;
+		color_sum += matte_color.value();
 	}
 
 #if RAYTRACE_DEBUG_POINTS
@@ -310,11 +331,11 @@ Color Scene::calculate_matte(const Intersection &intersection) const {
 	return TOTAL_MATTE;
 }
 
-Color Scene::calculate_reflection(const Intersection &intersection,
-								  const Vector &incident_dir,
-								  double refractive_index,
-								  const Color &ray_intensity,
-								  int recursion_depth) const {
+std::expected<Color, RayTracingError>
+Scene::calculate_reflection(const Intersection &intersection,
+							const Vector &incident_dir, double refractive_index,
+							const Color &ray_intensity,
+							int recursion_depth) const {
 	// Find the direction of the reflected ray based on the incident ray
 	// direction and the surface normal vector.  The reflected ray has
 	// the same angle with the normal vector as the incident ray, but
@@ -332,12 +353,33 @@ Color Scene::calculate_reflection(const Intersection &intersection,
 					 recursion_depth);
 }
 
-Color Scene::calculate_refraction(const Intersection &intersection,
-								  const Vector &direction,
-								  double source_refractive_index,
-								  const Color &ray_intensity,
-								  int recursion_depth,
-								  double &out_reflection_factor) const {
+std::pair<double, Vector>
+find_max_alignment(const std::pair<double, double> &roots,
+				   const Vector &surface_normal, const Vector &dir_unit) {
+	// There are generally 2 solutions for k, but only one of them is correct.
+	// The right answer is the value of k that causes the light ray to bend the
+	// smallest angle when comparing the direction of the refracted ray to the
+	// incident ray. This is the same as finding the hypothetical refracted ray
+	// with the largest positive dot product. In real refraction, the ray is
+	// always bent by less than 90 degrees, so all valid dot products are
+	// positive numbers.
+	double max_alignment = -0.0001; // any negative number works as a flag
+	Vector refract_dir;
+	auto [root0, root1] = roots;
+	// FIXME: how to call this snippet on 2 elements of the pair.
+
+	/* double alignment       = dir_unit.dot(refract_attempt); */
+	/* if (alignment > max_alignment) { */
+	/* 	max_alignment = alignment; */
+	/* 	refract_dir   = refract_attempt; */
+	/* } */
+	return std::make_pair(max_alignment, refract_dir);
+}
+
+std::expected<Color, RayTracingError> Scene::calculate_refraction(
+	const Intersection &intersection, const Vector &direction,
+	double source_refractive_index, const Color &ray_intensity,
+	int recursion_depth, double &out_reflection_factor) const {
 	// Convert direction to a unit vector so that
 	// relation between angle and dot product is simpler.
 	const Vector DIR_UNIT = direction.unit_vector();
@@ -349,9 +391,8 @@ Color Scene::calculate_refraction(const Intersection &intersection,
 	assert("Dot product not too small." && cos_a1 >= -1.0001);
 
 	if (cos_a1 <= -1.0 && cos_a1 >= -1.0001) {
-		// The incident ray points in exactly the opposite
-		// direction as the normal vector, so the ray
-		// is entering the solid exactly perpendicular
+		// The incident ray points in exactly the opposite direction as the
+		// normal vector, so the ray is entering the solid exactly perpendicular
 		// to the surface at the intersection point.
 		cos_a1 = -1.0; // clamp to lower limit
 		sin_a1 = 0.0;
@@ -397,10 +438,9 @@ Color Scene::calculate_refraction(const Intersection &intersection,
 
 	const double RATIO = source_refractive_index / TARGET_REFRACTIVE_INDEX;
 
-	// Snell's Law: the sine of the refracted ray's angle
-	// with the normal is obtained by multiplying the
-	// ratio of refractive indices by the sine of the
-	// incident ray's angle with the normal.
+	// Snell's Law: the sine of the refracted ray's angle with the normal is
+	// obtained by multiplying the ratio of refractive indices by the sine of
+	// the incident ray's angle with the normal.
 	const double SIN_A2 = RATIO * sin_a1;
 
 	if (SIN_A2 <= -1.0 || SIN_A2 >= +1.0) {
@@ -418,48 +458,24 @@ Color Scene::calculate_refraction(const Intersection &intersection,
 	// We solve a quadratic equation to help us calculate
 	// the vector direction of the refracted ray.
 
-	const auto SOLUTIONS = Algebra::solve_quadratic_equation(
-		Algebra::QuadraticRealCoeffs{1.0,
-									 cos_a1 * 2,
-									 1.0 - 1.0 / (RATIO * RATIO)});
+	const auto SOLUTIONS
+		= boost::math::tools::quadratic_roots(1.0,
+											  cos_a1 * 2,
+											  1.0 - 1.0 / (RATIO * RATIO));
 
-	// There are generally 2 solutions for k, but only
-	// one of them is correct.  The right answer is the
-	// value of k that causes the light ray to bend the
-	// smallest angle when comparing the direction of the
-	// refracted ray to the incident ray.  This is the
-	// same as finding the hypothetical refracted ray
-	// with the largest positive dot product.
-	// In real refraction, the ray is always bent by less
-	// than 90 degrees, so all valid dot products are
-	// positive numbers.
-	double max_alignment = -0.0001; // any negative number works as a flag
-	Vector refract_dir{};
-	for (const auto &solution : SOLUTIONS) {
-		Vector refract_attempt
-			= DIR_UNIT + solution * intersection.surface_normal;
-		double alignment = DIR_UNIT.dot(refract_attempt);
-		if (alignment > max_alignment) {
-			max_alignment = alignment;
-			refract_dir   = refract_attempt;
-		}
-	}
-
+	const auto &[max_alignment, refract_dir]
+		= find_max_alignment(SOLUTIONS, intersection.surface_normal, DIR_UNIT);
 	if (max_alignment <= 0.0) {
 		// Getting here means there is something wrong with the math.
 		// Either there were no solutions to the quadratic equation,
 		// or all solutions caused the refracted ray to bend 90 degrees
 		// or more, which is not possible.
-		throw ImagerException("Refraction failure.");
+		return std::unexpected(RayTracingError::REFRACTION_FAILURE);
 	}
 
 	// Determine the cosine of the exit angle.
-	double cos_a2 = sqrt(1.0 - SIN_A2 * SIN_A2);
-	if (cos_a1 < 0.0) {
-		// Tricky bit: the polarity of cos_a2 must
-		// match that of cos_a1.
-		cos_a2 = -cos_a2;
-	}
+	double cos_a2 = std::abs(sqrt(1.0 - SIN_A2 * SIN_A2));
+	// Tricky bit: the polarity of cos_a2 must match that of cos_a1.
 
 	// Determine what fraction of the light is reflected at the interface.
 	// The caller needs to know this for calculating total reflection, so it
@@ -610,42 +626,36 @@ ImageBuffer Scene::render(size_t pixel_width, size_t pixel_height,
 					}
 			}
 #endif
-
 			PixelData &pixel = buffer.pixel(i, j);
-			try {
-				// Trace a ray from the camera toward the given direction
-				// to figure out what color to assign to this pixel.
-				pixel.color = trace_ray(CAMERA,
-										direction,
-										ambient_refraction_,
-										FULL_INTENSITY);
-			} catch (const AmbiguousIntersectionException &e) {
-				scene_logger->error("{} at {}, {}", e.what(), i, j);
+			// Trace a ray from the camera toward the given direction
+			// to figure out what color to assign to this pixel.
+			// FIXME: rename this
+			auto color = trace_ray(CAMERA,
+								   direction,
+								   ambient_refraction_,
+								   FULL_INTENSITY);
+			switch (color.error()) {
+			case RayTracingError::MULTIPLE_MIN_DISTANCE:
+			case RayTracingError::REFRACTION_FAILURE:
+				scene_logger->error("{} at {}, {}", color.error(), i, j);
 
-				// Getting here means that somewhere in the recursive
-				// code for tracing rays, there were multiple
-				// intersections that had minimum distance from a
-				// vantage point.  This can be really bad,
-				// for example causing a ray of light to reflect
-				// inward into a solid.
-
-				// Mark the pixel as ambiguous, so that any other
+				// Getting here means that somewhere in the recursive code for
+				// tracing rays, there were multiple intersections that had
+				// minimum distance from a vantage point.  This can be really
+				// bad, for example causing a ray of light to reflect inward
+				// into a solid. Mark the pixel as ambiguous, so that any other
 				// ambiguous pixels nearby know not to use it.
 				pixel.is_ambiguous = true;
 
-				// Keep a list of all ambiguous pixel coordinates
-				// so that we can rapidly enumerate through them
-				// in the disambiguation pass.
+				// Keep a list of all ambiguous pixel coordinates so that we can
+				// rapidly enumerate through them in the disambiguation pass.
 				ambiguous_pixel_list.push_back(PixelCoordinates{i, j});
-			} catch (const std::exception &e) {
-				scene_logger->error("std::exception {} at {}, {}",
-									e.what(),
-									i,
-									j);
+			case RayTracingError::UNDEFINED_SOLID:
+				spdlog::error("{} at {}, {}", color.error(), i, j);
+			default: pixel.color = color.value();
 			}
 		}
 	}
-
 	/* for (size_t i = 0; i < LARGE_PIXEL_WIDTH; i++) */
 	/* 	for (size_t j = 0; j < LARGE_PIXEL_HEIGHT; j++) { */
 	/* 		const auto &[colour, _] = buffer.pixel(i, j); */
@@ -671,8 +681,9 @@ void Scene::export_file(const ImageBuffer &buffer, const char *png_file,
 	if (const auto ERROR
 		= lodepng::encode(png_file, RGBA_BUFFER, pixel_width, pixel_height);
 		ERROR) {
-		throw ImagerException(
-			fmt::format("PNG encoder error: {}", lodepng_error_text(ERROR)));
+		fmt::println(stderr,
+					 "PNG encoder error: {}",
+					 lodepng_error_text(ERROR));
 	}
 }
 
@@ -763,6 +774,5 @@ void Scene::resolve_ambiguous_pixel(ImageBuffer &buffer, size_t i,
 	// and following it into a crazy direction.
 	buffer.pixel(i, j).color = color_sum;
 }
-
 } // namespace Imager
 } // namespace raytracing

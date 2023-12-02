@@ -46,7 +46,7 @@ struct Vector {
 	 *
 	 * \see magnitude_squared()
 	 */
-	[[nodiscard]] double magnitude_sqr_in_plane() const {
+	[[nodiscard]] constexpr double magnitude_sqr_in_plane() const {
 		return x * x + y * y;
 	}
 
@@ -118,7 +118,7 @@ struct Vector {
 	Vector operator-() const;
 
 	/*
-	 * [Binary symmetric operators]
+	 * [vector.binary_symmetric_operators]
 	 *
 	 * Binary operators are typically implemented as non-members to maintain
 	 * symmetry (for example, when adding a complex number and an integer, if

@@ -26,15 +26,11 @@ public:
 	append_all_intersections(const Vector &vantage,
 							 const Vector &direction) const override;
 
-	bool contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError> contains(const Vector &point) const override;
 
 	// The nice thing about a sphere is that rotating it has no effect on its
 	// appearance!
-	SolidObject &rotate_x(double angle_in_degrees) override;
-
-	SolidObject &rotate_y(double angle_in_degrees) override;
-
-	SolidObject &rotate_z(double angle_in_degrees) override;
+	SolidObject &rotate(double angle_in_degrees, char axis) override;
 
 private:
 	double radius_;

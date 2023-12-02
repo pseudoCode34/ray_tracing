@@ -20,7 +20,7 @@ void dodecahedron_overlap_test() {
 
 	auto *dodecahedron
 		= new Dodecahedron(Vector{+0.0, 0.0, -50.0}, 1.0, optics);
-	dodecahedron->rotate_x(-12.0).rotate_y(-7.0);
+	dodecahedron->rotate(-12.0, 'x').rotate(-7.0, 'y');
 
 	// Create a sphere that overlaps with the dodecahedron.
 	const Vector SPHERE_CENTER{+255, 0.0, -50.0};

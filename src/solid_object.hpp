@@ -5,11 +5,17 @@
 #include "optics.hpp"
 #include "refraction_constants.hpp"
 
+#include <expected>
 #include <memory>
-#include <optional>
 
 namespace raytracing {
 namespace Imager {
+
+enum class ContainmentError {
+	MISSING_BOUNDARY,
+	AMBIGUOUS_TRANSISTION,
+	INDETERMINABLE
+};
 
 class SolidObject {
 public:
@@ -52,8 +58,9 @@ public:
 	 * this function to return 3).
 	 *
 	 * \note If this function returns a value greater than zero, it means the
-	 * 'intersection' parameter has been filled in with the closest intersection
-	 * (or one of the equally closest intersections).
+	 * 'intersection' parameter has been filled instd::expected<bool,
+	 * ContainmentError> with the closest intersection (or one of the equally
+	 * closest intersections).
 	 */
 	IntersectionResult find_closest_intersection(const Vector &vantage,
 												 const Vector &direction) const;
@@ -66,7 +73,8 @@ public:
 	 * often implement a more efficient algorithm to override this default
 	 * algorithm.
 	 */
-	virtual bool contains(const Vector &point) const;
+	virtual std::expected<bool, ContainmentError>
+	contains(const Vector &point) const;
 
 	/*
 	 * \brief Returns the optical properties (reflection and refraction) at a
@@ -88,9 +96,7 @@ public:
 	// object counterclockwise around a line parallel
 	// to the x, y, or z axis, as seen from the positive
 	// axis direction.
-	virtual SolidObject &rotate_x(double angle_in_degrees) = 0;
-	virtual SolidObject &rotate_y(double angle_in_degrees) = 0;
-	virtual SolidObject &rotate_z(double angle_in_degrees) = 0;
+	virtual SolidObject &rotate(double angle_in_degrees, char axis) = 0;
 
 	// Moves the entire solid object by the delta values dx, dy, dz. Derived
 	// classes that override this method must chain to it in order to translate
@@ -104,7 +110,7 @@ public:
 	// location specified by the position vector newCenter.
 	SolidObject &move_centre_to(const Vector &new_center);
 
-	const Vector &center() const;
+	const Vector &get_center() const;
 
 	// Derived classes are allowed to report different optical
 	// properties at different points on their surface(s).
@@ -125,8 +131,8 @@ public:
 	// surface.  If glossFactor = 1, the surface is completely
 	// mirror-like.
 	void set_matte_gloss_balance(double gloss_factor,
-								 const Color &raw_matte_color,
-								 const Color &raw_gloss_color);
+								 const Color &raw_matte_color = Color("white"),
+								 const Color &raw_gloss_color = Color("white"));
 
 	void set_full_matte(const Color &matte_color);
 
@@ -134,7 +140,6 @@ public:
 
 	void set_refraction(double refraction);
 
-protected:
 	const Optics &get_uniform_optics() const;
 
 private:

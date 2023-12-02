@@ -26,8 +26,7 @@ void set_intersection_test() {
 	SolidObject *isect = new SetIntersection(Vector{}, sphere1, sphere2);
 
 	isect->move_point_to(0.0, 0.0, -50.0);
-	isect->rotate_y(-12.0);
-	isect->rotate_x(-28.0);
+	isect->rotate(-12.0, 'y').rotate(-28.0, 'x');
 
 	scene.add_solid_object(std::unique_ptr<SolidObject>(isect));
 	scene.add_light_source(

@@ -8,16 +8,6 @@ namespace raytracing {
 #endif
 
 namespace Imager {
-/* auto shared_imager_sink */
-/* 	= std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/imager.txt"); */
-
-ImagerException::ImagerException(const std::string &message)
-	: std::runtime_error(message) // std::runtime_error will handle the string
-{}
-
-AmbiguousIntersectionException::AmbiguousIntersectionException(
-	const std::string &message)
-	: std::runtime_error{message} {}
 
 void indent(int recursion_depth) { fmt::print("{:>{}}", "", recursion_depth); }
 

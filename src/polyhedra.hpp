@@ -31,11 +31,8 @@ public:
 	explicit Dodecahedron(const Vector &center, double scale, const Optics &optics);
 
 private:
-	void add_face(int a_point_index, int b_point_index, int c_point_index,
-				  int d_point_index, int e_point_index, const Optics &optics,
+	void add_face(const PentagonPoints& pentagon, const Optics &optics,
 				  double edge);
-
-	void check_edge(int a_point_index, int b_point_index, double edge) const;
 };
 
 /*
@@ -45,6 +42,5 @@ struct Icosahedron : TriangleMesh {
 	Icosahedron(const Vector &center, double scale, const Optics &optics);
 };
 } // namespace Imager
-
 } // namespace raytracing
 #endif // __DDC_POLYHEDRA_H

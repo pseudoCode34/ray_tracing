@@ -14,23 +14,20 @@ void torus_test(const char *image_file, double gloss_factor) {
 
 	Scene scene;
 
-	const Color WHITE("white");
-
 	auto *torus1 = new Torus(3.0, 255);
 	auto *torus2 = new Torus(3.0, 255);
-	torus1->set_matte_gloss_balance(gloss_factor, WHITE, WHITE);
+	torus1->set_matte_gloss_balance(gloss_factor);
 	torus1->move_point_to(+1.5, 0.0, 0.0);
 
-	torus2->set_matte_gloss_balance(gloss_factor, WHITE, WHITE);
-	torus2->move_point_to(-1.5, 0.0, 0.0).rotate_x(-90.0);
+	torus2->set_matte_gloss_balance(gloss_factor);
+	torus2->move_point_to(-1.5, 0.0, 0.0).rotate(-90.0, 'x');
 
 	auto *double_torus = new SetUnion(Vector{}, torus1, torus2);
 
 	scene.add_solid_object(std::unique_ptr<SolidObject>(double_torus));
 
 	double_torus->move_point_to(0.0, 0.0, -50.0);
-	double_torus->rotate_x(-45.0);
-	double_torus->rotate_y(-30.0);
+	double_torus->rotate(-45.0, 'x').rotate(-30.0, 'y');
 
 	// Add a light source to illuminate the objects in the scene; otherwise we
 	// won't see anything!

@@ -1,13 +1,28 @@
 #include "color.hpp"
 
-#include "common_constants.hpp"
-
 #include <numeric>
 #include <spdlog/sinks/basic_file_sink.h>
 
 namespace raytracing {
 namespace Imager {
 /* auto color_logger = spdlog::basic_logger_mt("color", "logs/color.txt"); */
+Color::Color(std::string_view color_name, double alpha) : alpha(alpha) {
+	assert(alpha >= 0 && alpha <= 1);
+	const auto *it = std::ranges::find_if(
+		COLOR_MAPPINGS,
+		[color_name](std::string_view name) { return name == color_name; },
+		&ColorMapping::name);
+
+	assert(it != COLOR_MAPPINGS.end() && "Color name is not defined.");
+	red   = it->rgb[0];
+	green = it->rgb[1];
+	blue  = it->rgb[2];
+}
+
+Color::Color(int red, int green, int blue, double alpha)
+	: red{red}, green{green}, blue{blue}, alpha{alpha} {
+	validate();
+}
 
 Color &Color::operator+=(const Color &other) {
 	red += other.red;

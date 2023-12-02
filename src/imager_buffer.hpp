@@ -4,8 +4,6 @@
 #include "imager.hpp"
 #include "intersection.hpp"
 
-#include <ostream>
-
 namespace raytracing {
 namespace Imager {
 /*
@@ -23,16 +21,12 @@ public:
 	/*
 	 * \brief Returns a read/write reference to the pixel data for the specified
 	 * column \param i and row \param j.
-	 *
-	 * \throws ImagerException Thrown if the coordinates are out of bound.
 	 */
 
 	PixelData &pixel(size_t i, size_t j);
 	/*
 	 * \brief Returns a read-only reference to the pixel data for the specified
 	 * column \param i and row \param j.
-	 *
-	 * \throws ImagerException Thrown if the coordinates are out of bound.
 	 */
 	const PixelData &pixel(size_t i, size_t j) const;
 

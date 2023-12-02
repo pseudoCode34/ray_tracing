@@ -17,8 +17,8 @@ void cuboid_test() {
 	Cuboid cuboid(3.0, 4.0, 2.0);
 	cuboid.set_full_matte(Color(255, 51, 128));
 	cuboid.move_point_to(0.0, 0.0, -50.0);
-	cuboid.rotate_x(-115.0);
-	cuboid.rotate_y(-22.0);
+	cuboid.rotate(-115.0, 'x');
+	cuboid.rotate(-22.0, 'y');
 
 	scene.add_solid_object(std::make_unique<Cuboid>(std::move(cuboid)));
 	scene.add_light_source(

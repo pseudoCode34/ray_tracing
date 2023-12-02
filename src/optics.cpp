@@ -33,7 +33,7 @@ void Optics::balance_matte_gloss(double gloss_factor,
 	raw_matte_color.validate();
 	raw_gloss_color.validate();
 
-	assert(gloss_factor >= 0.0 && gloss_factor <= 255);
+	assert(gloss_factor >= 0.0 && gloss_factor <= 1.0);
 	set_matte_color((1.0 - gloss_factor) * raw_matte_color);
 	set_gloss_color(gloss_factor * raw_gloss_color);
 }

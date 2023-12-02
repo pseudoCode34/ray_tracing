@@ -92,7 +92,7 @@ Spheroid::object_space_append_all_intersections(const Vector &vantage,
 			- X_AXIS_RADIUS_SQR * Y_AXIS_RADIUS_SQR * Z_AXIS_RADIUS_SQR);
 
 	auto make_intersection
-		= [this, &vantage, &direction] [[nodiscard]] (auto &&solution) {
+		= [this, &vantage, &direction] [[nodiscard]] (double solution) {
 			  Vector displacement = solution * direction,
 					 location     = vantage + displacement;
 			  return Intersection{

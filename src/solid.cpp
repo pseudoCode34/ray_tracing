@@ -1,6 +1,5 @@
 #include "binary.hpp"
 #include "color.hpp"
-#include "imager.hpp"
 #include "intersection.hpp"
 #include "optics.hpp"
 #include "refraction_constants.hpp"
@@ -47,15 +46,16 @@ SolidObject &SolidObject::move_centre_to(const Vector &new_center) {
 	return *this;
 }
 
-bool SolidObject::contains(const Vector &point) const {
+std::expected<bool, ContainmentError>
+SolidObject::contains(const Vector &point) const {
 	// FIXME: This function does not handle the "corner case":
 	// multiple intersections found at the same point but for
 	// different facets of the solid.
 
 	if (!is_fully_enclosed_)
-		// Whoever constructed this object has indicated that
-		// it should not be considered to contain any points.
-		return false;
+		// Whoever constructed this object has indicated that it should not be
+		// considered to contain any points.
+		return std::unexpected(ContainmentError::MISSING_BOUNDARY);
 
 	// This method assumes that the solid's surfaces fully enclose a volume of
 	// space without any gaps or cracks. Pick an arbitrary direction in space
@@ -80,16 +80,16 @@ bool SolidObject::contains(const Vector &point) const {
 			// If the dot product is too close to zero, something odd is going
 			// on because we should not have found an intersection with a plane
 			// in the first place.
-			throw ImagerException("Ambiguous transition.");
+			return std::unexpected(ContainmentError::AMBIGUOUS_TRANSISTION);
 	}
 
 	// If the original point is within this solid, we have exited the object one
 	// more time than we entered. Otherwise, we have exited and entered the same
 	// number of times.
 	switch (exit_count - enter_count) {
-	case 0: return false; // point is outside the solid
+	case 0: return false;
 
-	case 1: return true;  // point is inside the solid
+	case 1: return true;
 
 	default:
 		// This can happen only if the solid's surfaces do not properly enclose
@@ -97,7 +97,7 @@ bool SolidObject::contains(const Vector &point) const {
 		// corrected so as to perfectly seal the interior volume or this
 		// instance should be constructed with isFullyEnclosed initialized to
 		// false.
-		throw ImagerException("Cannot determine containment.");
+		return std::unexpected(ContainmentError::INDETERMINABLE);
 	}
 }
 

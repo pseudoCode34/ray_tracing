@@ -40,10 +40,11 @@ void draw_chess_board() {
 					 DARK_SQUARE_COLOR,
 					 BORDER_COLOR);
 
-	board.move_point_to(-0.35, 0.1, -20.0).rotate_z(+11.0).rotate_x(-62.0);
+	board.move_point_to(-0.35, 0.1, -20.0)
+		.rotate(+11.0, 'z')
+		.rotate(-62.0, 'x');
 
 	scene.add_solid_object(std::make_unique<ChessBoard>(std::move(board)));
-
 
 	/* 	{{Vector{0.0, 0.0, -17.0}, 0.72}, {Vector{+1.8, 0.0, -17.0}, 0.72}}); */
 

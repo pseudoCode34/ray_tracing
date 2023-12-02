@@ -7,6 +7,7 @@
 #include "light_source.hpp"
 #include "solid_object.hpp"
 
+#include <expected>
 #include <memory>
 #include <optional>
 #include <spdlog/sinks/basic_file_sink.h>
@@ -19,6 +20,12 @@ namespace Imager {
 class ImageBuffer;
 class SolidObject;
 struct Vector;
+
+enum class RayTracingError {
+	MULTIPLE_MIN_DISTANCE,
+	UNDEFINED_SOLID,
+	REFRACTION_FAILURE
+};
 
 /*
  * \brief The Scene object renders a collection of SolidObjects and LightSources
@@ -110,9 +117,11 @@ private:
 	 * Scene::calculate_lighting to determine what color to assign to the pixel
 	 * corresponding to that intersection
 	 */
-	Color trace_ray(const Vector &vantage, const Vector &direction,
-					double refractive_index, const Color &ray_intensity,
-					int recursion_depth) const;
+	std::expected<Color, RayTracingError> trace_ray(const Vector &vantage,
+													const Vector &direction,
+													double refractive_index,
+													const Color &ray_intensity,
+													int recursion_depth) const;
 
 	/*
 	 * \brief Determines the color of an intersection, based on illumination it
@@ -131,10 +140,10 @@ private:
 	 * the surface that is closest to the camera in a particular \param
 	 * direction from the vantage point
 	 */
-	Color calculate_lighting(const Intersection &intersection,
-							 const Vector &direction, double refractive_index,
-							 const Color &ray_intensity,
-							 int recursion_depth) const;
+	std::expected<Color, RayTracingError>
+	calculate_lighting(const Intersection &intersection,
+					   const Vector &direction, double refractive_index,
+					   const Color &ray_intensity, int recursion_depth) const;
 
 	/*
 	 * Determines the contribution of the illumination of a point based on matte
@@ -143,17 +152,15 @@ private:
 	 */
 	Color calculate_matte(const Intersection &intersection) const;
 
-	Color calculate_reflection(const Intersection &intersection,
-							   const Vector &incident_dir,
-							   double refractive_index,
-							   const Color &ray_intensity,
-							   int recursion_depth) const;
+	std::expected<Color, RayTracingError>
+	calculate_reflection(const Intersection &intersection,
+						 const Vector &incident_dir, double refractive_index,
+						 const Color &ray_intensity, int recursion_depth) const;
 
-	Color calculate_refraction(const Intersection &intersection,
-							   const Vector &direction,
-							   double source_refractive_index,
-							   const Color &ray_intensity, int recursion_depth,
-							   double &out_reflection_factor) const;
+	std::expected<Color, RayTracingError> calculate_refraction(
+		const Intersection &intersection, const Vector &direction,
+		double source_refractive_index, const Color &ray_intensity,
+		int recursion_depth, double &out_reflection_factor) const;
 
 	// FIXME: Use std::optional monadic operation
 	SolidObject *primary_container(const Vector &point) const;
@@ -223,4 +230,12 @@ private:
 extern std::shared_ptr<spdlog::logger> scene_logger;
 } // namespace Imager
 } // namespace raytracing
+
+template <>
+struct fmt::formatter<raytracing::Imager::RayTracingError>
+	: formatter<string_view> {
+	auto format(raytracing::Imager::RayTracingError error,
+				format_context &ctx) const;
+};
+
 #endif /* ifndef SCENCE_HPP */

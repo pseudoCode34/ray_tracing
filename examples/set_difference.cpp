@@ -8,6 +8,7 @@
 #include "vector.hpp"
 
 #include <memory>
+#include <utility>
 
 namespace raytracing {
 void set_difference_test() {
@@ -18,15 +19,18 @@ void set_difference_test() {
 	const Color SPHERE_COLOR(255, 255, 128);
 
 	// Display the intersection of two overlapping spheres.
-	SolidObject *sphere1 = new Sphere(Vector{-0.5, 0.0, 0.0}, 1.0),
-				*sphere2 = new Sphere(Vector{+0.1, 0.0, 0.0}, 1.3);
+	auto make_sphere = [&SPHERE_COLOR](Vector &&location, double radius) {
+		SolidObject *sphere1 = new Sphere(std::move(location), radius);
+		sphere1->set_full_matte(SPHERE_COLOR);
+		return sphere1;
+	};
 
-	sphere1->set_full_matte(SPHERE_COLOR);
-	sphere2->set_full_matte(SPHERE_COLOR);
-
-	SolidObject *diff = new SetIntersection(Vector{}, sphere1, sphere2);
+	SolidObject *diff
+		= new SetIntersection(Vector{},
+							  make_sphere(Vector{-0.5, 0.0, 0.0}, 1.0),
+							  make_sphere(Vector{0.5, 0.0, 0.0}, 1.3));
 	diff->move_point_to(1.0, 0.0, -50.0);
-	diff->rotate_y(-5.0);
+	diff->rotate(-5.0, 'y');
 
 	scene.add_solid_object(std::unique_ptr<SolidObject>(std::move(diff)));
 

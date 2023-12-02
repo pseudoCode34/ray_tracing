@@ -1,11 +1,9 @@
 #include "torus.hpp"
 
-#include "algebra.hpp"
-#include "imager.hpp"
-#include "range_conversion.hpp"
-
+#include <boost/math/tools/quartic_roots.hpp>
 #include <cmath>
 #include <range/v3/range/conversion.hpp>
+#include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
 #include <vector>
 
@@ -34,17 +32,15 @@ std::vector<double> Torus::solve_intersections(const Vector &vantage,
 	const double SURFACE_TOLERANCE = 1.0e-4;
 
 	// receives 0..4 real solutions
-	return Algebra::solve_quartic_equation(Algebra::QuarticRealCoeffs{
-			   J * J,
-			   2.0 * J * K,
-			   2.0 * J * L + K * K - G,
-			   2.0 * K * L - H,
-			   L * L - I,
+	auto roots = boost::math::tools::quartic_roots(J * J,
+												   2.0 * J * K,
+												   2.0 * J * L + K * K - G,
+												   2.0 * K * L - H,
+												   L * L - I);
+	return roots | ranges::views::filter([SURFACE_TOLERANCE](auto number) {
+			   return number > SURFACE_TOLERANCE;
 		   })
-		   | std::views::filter([SURFACE_TOLERANCE](auto &&number) {
-				 return number > SURFACE_TOLERANCE;
-			 })
-		   | to<std::vector<double>>();
+		   | ranges::to<std::vector<double>>();
 }
 
 IntersectionList

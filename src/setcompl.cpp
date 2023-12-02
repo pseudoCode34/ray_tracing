@@ -44,9 +44,10 @@
 namespace raytracing {
 namespace Imager {
 SetComplement::SetComplement(SolidObject *other)
-	: SolidObject(other->center()), other_(other) {}
+	: SolidObject(other->get_center()), other_(other) {}
 
-bool SetComplement::contains(const Vector &point) const {
+std::expected<bool, ContainmentError>
+SetComplement::contains(const Vector &point) const {
 	// This is the core of the set complement: toggling the value of any point
 	// containment
 	return !other_->contains(point);
@@ -58,18 +59,8 @@ SolidObject &SetComplement::translate(double dx, double dy, double dz) {
 	return *this;
 }
 
-SolidObject &SetComplement::rotate_x(double angle_in_degrees) {
-	other_->rotate_x(angle_in_degrees);
-	return *this;
-}
-
-SolidObject &SetComplement::rotate_y(double angle_in_degrees) {
-	other_->rotate_y(angle_in_degrees);
-	return *this;
-}
-
-SolidObject &SetComplement::rotate_z(double angle_in_degrees) {
-	other_->rotate_z(angle_in_degrees);
+SolidObject &SetComplement::rotate(double angle_in_degrees, char axis) {
+	other_->rotate(angle_in_degrees, axis);
 	return *this;
 }
 

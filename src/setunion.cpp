@@ -52,9 +52,9 @@ SetUnion::append_all_intersections(const Vector &vantage,
 	return ranges::views::concat(x, y) | ranges::to<IntersectionList>();
 }
 
-bool SetUnion::contains(const Vector &point) const {
-	// A point is inside the set union if it is in either of the nested
-	// solids.
+std::expected<bool, ContainmentError>
+SetUnion::contains(const Vector &point) const {
+	// A point is inside the set union if it is in either of the nested solids.
 	return left().contains(point) || right().contains(point);
 }
 } // namespace Imager

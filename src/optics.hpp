@@ -11,6 +11,8 @@ public:
 	explicit Optics(Color &&matte_color = Color("white"),
 					Color &&gloss_color = {}, double opacity = 1.0);
 
+	auto operator<=>(const Optics &) const = default;
+
 	/**
 	 * Scale the glossy and matte parts of reflected light so that an object
 	 * does not reflect more light than hits it.
@@ -19,8 +21,9 @@ public:
 	 * \param raw_matte_color The intensity of scattered reflection
 	 * \param raw_gloss_color The intensity of scattered reflection
 	 */
-	void balance_matte_gloss(double gloss_factor, const Color &raw_matte_color,
-							 const Color &raw_gloss_color);
+	void balance_matte_gloss(double gloss_factor,
+							 const Color &raw_matte_color = Color("white"),
+							 const Color &raw_gloss_color = Color("white"));
 
 	void set_matte_color(const Color &matte_color);
 	void set_gloss_color(const Color &gloss_color);
@@ -31,8 +34,6 @@ public:
 	const Color &get_gloss_color() const;
 
 	double get_opacity() const;
-
-protected:
 
 private:
 	Color matte_color_; // color, intensity of scattered reflection

@@ -61,7 +61,7 @@ IntersectionResult pick_closest_intersection(const IntersectionList &list) {
 					tie_count = 1;
 					return true;
 				}
-				if (Algebra::is_fp_zero(diff)) ++tie_count;
+				if (Algebra::is_near_zero(diff)) ++tie_count;
 				return false;
 			},
 			&Intersection::distance_squared);

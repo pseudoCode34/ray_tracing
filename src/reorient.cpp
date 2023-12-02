@@ -1,4 +1,4 @@
-#include "imager.hpp"
+#include "algebra.hpp"
 #include "solid_reorientable.hpp"
 
 #include <cmath>
@@ -15,7 +15,8 @@ SolidObject_Reorientable::SolidObject_Reorientable(const Vector &center)
 	  y_dir_{0.0, 1.0, 0.0},
 	  z_dir_{0.0, 0.0, 1.0} {}
 
-bool SolidObject_Reorientable::contains(const Vector &point) const {
+std::expected<bool, ContainmentError>
+SolidObject_Reorientable::contains(const Vector &point) const {
 	return object_space_contains(object_point_from_camera_point(point));
 }
 
@@ -40,7 +41,7 @@ Vector SolidObject_Reorientable::object_dir_from_camera_dir(
 
 Vector SolidObject_Reorientable::object_point_from_camera_point(
 	const Vector &camera_point) const {
-	return object_dir_from_camera_dir(camera_point - center());
+	return object_dir_from_camera_dir(camera_point - get_center());
 }
 
 Vector SolidObject_Reorientable::camera_dir_from_object_dir(
@@ -52,7 +53,7 @@ Vector SolidObject_Reorientable::camera_dir_from_object_dir(
 
 Vector SolidObject_Reorientable::camera_point_from_object_point(
 	const Vector &object_point) const {
-	return center() + camera_dir_from_object_dir(object_point);
+	return get_center() + camera_dir_from_object_dir(object_point);
 }
 
 void SolidObject_Reorientable::update_inverse_rotation() {
@@ -66,72 +67,57 @@ void SolidObject_Reorientable::update_inverse_rotation() {
 	z_dir_ = Vector{r_dir_.z, s_dir_.z, t_dir_.z};
 }
 
-const Vector &SolidObject::center() const { return center_; }
+const Vector &SolidObject::get_center() const { return center_; }
 
 void SolidObject::set_uniform_optics(const Optics &optics) {
 	uniform_optics_ = optics;
 }
 
 // Rotates counterclockwise around center looking into axis parallel to x-axis.
-SolidObject &SolidObject_Reorientable::rotate_x(double angle_in_degrees) {
-	const double ANGLE_IN_RADIANS = radian_from_degree(angle_in_degrees);
-	const double A                = cos(ANGLE_IN_RADIANS);
-	const double B                = sin(ANGLE_IN_RADIANS);
+SolidObject &SolidObject_Reorientable::rotate(double angle_in_degrees,
+											  char axis) {
+	const auto [cos_val, sin_val]
+		= Algebra::calculate_cos_sin(angle_in_degrees);
 
-	r_dir_ = Vector{r_dir_.x,
-					A * r_dir_.y - B * r_dir_.z,
-					A * r_dir_.z + B * r_dir_.y};
-	s_dir_ = Vector{s_dir_.x,
-					A * s_dir_.y - B * s_dir_.z,
-					A * s_dir_.z + B * s_dir_.y};
-	t_dir_ = Vector{t_dir_.x,
-					A * t_dir_.y - B * t_dir_.z,
-					A * t_dir_.z + B * t_dir_.y};
-
+	switch (axis) {
+	case 'x':
+		r_dir_ = Vector{r_dir_.x,
+						cos_val * r_dir_.y - sin_val * r_dir_.z,
+						cos_val * r_dir_.z + sin_val * r_dir_.y};
+		s_dir_ = Vector{s_dir_.x,
+						cos_val * s_dir_.y - sin_val * s_dir_.z,
+						cos_val * s_dir_.z + sin_val * s_dir_.y};
+		t_dir_ = Vector{t_dir_.x,
+						cos_val * t_dir_.y - sin_val * t_dir_.z,
+						cos_val * t_dir_.z + sin_val * t_dir_.y};
+		break;
+	case 'y':
+		r_dir_ = Vector{cos_val * r_dir_.x + sin_val * r_dir_.z,
+						r_dir_.y,
+						cos_val * r_dir_.z - sin_val * r_dir_.x};
+		s_dir_ = Vector{cos_val * s_dir_.x + sin_val * s_dir_.z,
+						s_dir_.y,
+						cos_val * s_dir_.z - sin_val * s_dir_.x};
+		t_dir_ = Vector{cos_val * t_dir_.x + sin_val * t_dir_.z,
+						t_dir_.y,
+						cos_val * t_dir_.z - sin_val * t_dir_.x};
+		break;
+	case 'z':
+		r_dir_ = Vector{cos_val * r_dir_.x - sin_val * r_dir_.y,
+						cos_val * r_dir_.y + sin_val * r_dir_.x,
+						r_dir_.z};
+		s_dir_ = Vector{cos_val * s_dir_.x - sin_val * s_dir_.y,
+						cos_val * s_dir_.y + sin_val * s_dir_.x,
+						s_dir_.z};
+		t_dir_ = Vector{cos_val * t_dir_.x - sin_val * t_dir_.y,
+						cos_val * t_dir_.y + sin_val * t_dir_.x,
+						t_dir_.z};
+		break;
+	default:
+		// FIXME: Consider a throw here
+		fmt::println(stderr, "Invalid axis specified.");
+	}
 	update_inverse_rotation();
-
-	return *this;
-}
-
-// Rotates counterclockwise around center looking into axis parallel to y-axis.
-SolidObject &SolidObject_Reorientable::rotate_y(double angle_in_degrees) {
-	const double ANGLE_IN_RADIANS = radian_from_degree(angle_in_degrees);
-	const double A                = cos(ANGLE_IN_RADIANS);
-	const double B                = sin(ANGLE_IN_RADIANS);
-
-	r_dir_ = Vector{A * r_dir_.x + B * r_dir_.z,
-					r_dir_.y,
-					A * r_dir_.z - B * r_dir_.x};
-	s_dir_ = Vector{A * s_dir_.x + B * s_dir_.z,
-					s_dir_.y,
-					A * s_dir_.z - B * s_dir_.x};
-	t_dir_ = Vector{A * t_dir_.x + B * t_dir_.z,
-					t_dir_.y,
-					A * t_dir_.z - B * t_dir_.x};
-
-	update_inverse_rotation();
-
-	return *this;
-}
-
-// Rotates counterclockwise around center looking into axis parallel to z-axis.
-SolidObject &SolidObject_Reorientable::rotate_z(double angle_in_degrees) {
-	const double ANGLE_IN_RADIANS = radian_from_degree(angle_in_degrees);
-	const double A                = cos(ANGLE_IN_RADIANS);
-	const double B                = sin(ANGLE_IN_RADIANS);
-
-	r_dir_ = Vector{A * r_dir_.x - B * r_dir_.y,
-					A * r_dir_.y + B * r_dir_.x,
-					r_dir_.z};
-	s_dir_ = Vector{A * s_dir_.x - B * s_dir_.y,
-					A * s_dir_.y + B * s_dir_.x,
-					s_dir_.z};
-	t_dir_ = Vector{A * t_dir_.x - B * t_dir_.y,
-					A * t_dir_.y + B * t_dir_.x,
-					t_dir_.z};
-
-	update_inverse_rotation();
-
 	return *this;
 }
 

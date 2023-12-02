@@ -13,7 +13,9 @@ void spheroid_test() {
 	Scene scene;
 
 	Spheroid spheroid(4.0, 2.0, 1.0);
-	spheroid.move_point_to(0.0, 0.0, -50.0).rotate_x(-12.0).rotate_y(-60.0);
+	spheroid.move_point_to(0.0, 0.0, -50.0)
+		.rotate(-12.0, 'x')
+		.rotate(-60.0, 'y');
 
 	scene.add_solid_object(std::make_unique<Spheroid>(std::move(spheroid)));
 	scene.add_light_source(

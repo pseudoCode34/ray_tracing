@@ -1,5 +1,5 @@
 set(EXAMPLE_FILES
-    all_unit_tests.cpp
+    all_examples.cpp
     bit_donut.cpp
     block.cpp
     chessboard.cpp

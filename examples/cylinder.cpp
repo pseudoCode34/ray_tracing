@@ -20,7 +20,9 @@ void cylinder_test() {
 
 	auto *cylinder = new Cylinder(2.0, 5.0);
 	cylinder->set_full_matte(Color(255, 128, 128));
-	cylinder->move_point_to(0.0, 0.0, -50.0).rotate_x(-72.0).rotate_y(-12.0);
+	cylinder->move_point_to(0.0, 0.0, -50.0)
+		.rotate(-72.0, 'x')
+		.rotate(-12.0, 'y');
 
 	scene.add_solid_object(std::unique_ptr<SolidObject>(cylinder));
 	scene.add_light_source(
@@ -45,8 +47,7 @@ void saturn_test() {
 	Scene scene;
 	auto *saturn = new Saturn();
 	saturn->move_point_to(0.0, 0.0, -255.0);
-	saturn->rotate_y(-15.0);
-	saturn->rotate_x(-83.0);
+	saturn->rotate(-15.0, 'y').rotate(-83.0, 'x');
 	scene.add_solid_object(std::unique_ptr<SolidObject>(saturn));
 	scene.add_light_source(
 		LightSource(Vector{+30.0, +26.0, +20.0}, Color("white")));
@@ -71,14 +72,12 @@ void polyhedra_test() {
 	Optics optics; // use default optics (white matte finish, opaque)
 
 	auto *icosahedron = new Icosahedron(Vector{-2.0, 0.0, -50.0}, 1.0, optics);
-	icosahedron->rotate_y(-12.0);
-	icosahedron->rotate_x(-7.0);
+	icosahedron->rotate(-12.0, 'y').rotate(-7.0, 'x');
 	scene.add_solid_object(std::unique_ptr<SolidObject>(icosahedron));
 
 	auto *dodecahedron
 		= new Dodecahedron(Vector{+2.0, 0.0, -50.0}, 1.0, optics);
-	dodecahedron->rotate_x(-12.0);
-	dodecahedron->rotate_y(-7.0);
+	dodecahedron->rotate(-12.0, 'x').rotate(-7.0, 'y');
 	scene.add_solid_object(std::unique_ptr<SolidObject>(dodecahedron));
 
 	scene.add_light_source(

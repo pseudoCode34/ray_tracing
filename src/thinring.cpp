@@ -17,9 +17,9 @@ bool ThinRing::object_space_contains(const Vector &point) const {
 	if (std::abs(point.z) > EPSILON) return false;
 
 	const double MAG_SQUARED = point.magnitude_sqr_in_plane();
-	using Algebra::is_fp_zero;
-	return is_fp_zero(inner_radius_ * inner_radius_ - MAG_SQUARED)
-		   && is_fp_zero(MAG_SQUARED - outer_radius_ * outer_radius_);
+	using Algebra::is_near_zero;
+	return is_near_zero(inner_radius_ * inner_radius_ - MAG_SQUARED)
+		   && is_near_zero(MAG_SQUARED - outer_radius_ * outer_radius_);
 }
 
 IntersectionList

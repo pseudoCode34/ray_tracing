@@ -1,3 +1,4 @@
+#include "algebra.hpp"
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
@@ -26,13 +27,15 @@ void add_kaleidoscope_mirrors(Imager::Scene &scene, double width,
 	Optics optics;
 	optics.balance_matte_gloss(1.0, Color("white"), Color("white"));
 
+	auto make_mirror = [&optics](double a, double b, double c) {
+		auto *mirror = new Cuboid(a, b, c);
+		mirror->set_uniform_optics(optics);
+		return mirror;
+	};
 	std::array<SolidObject *, 3> mirror;
-	for (int i = 0; i < 3; ++i) {
-		mirror[i] = new Cuboid(a, b, c);
-		mirror[i]->set_uniform_optics(optics);
-
-		scene.add_solid_object(std::unique_ptr<SolidObject>(mirror[i]));
-	}
+	for (int i = 0; i < 3; ++i)
+		scene.add_solid_object(
+			std::unique_ptr<SolidObject>(make_mirror(a, b, c)));
 
 	// Rotate/translate the three mirrors differently.
 	// Use the common value 's' that tells how far
@@ -40,22 +43,18 @@ void add_kaleidoscope_mirrors(Imager::Scene &scene, double width,
 	double s = b + a / sqrt(3.0);
 
 	// Pre-calculate trig functions used more than once.
-	double angle = radian_from_degree(30.0);
-	double ca    = cos(angle);
-	double sa    = sin(angle);
+	const auto [cos_val, sin_val] = Algebra::calculate_cos_sin(30.0);
 
 	// The bottom mirror just moves down (in the -y direction)
 	mirror[0]->translate(0.0, -s, 0.0);
 
 	// The upper left mirror moves up and left
 	// and rotates +60 degrees around z axis.
-	mirror[1]->translate(-s * ca, s * sa, 0.0);
-	mirror[1]->rotate_z(+60.0);
+	mirror[1]->translate(-s * cos_val, s * sin_val, 0.0).rotate(+60.0, 'z');
 
 	// The upper right mirror moves up and right
 	// and rotates -60 degrees around z axis.
-	mirror[2]->translate(s * ca, s * sa, 0.0);
-	mirror[2]->rotate_z(-60.0);
+	mirror[2]->translate(s * cos_val, s * sin_val, 0.0).rotate(-60.0, 'z');
 }
 
 void kaleidoscope_test() {
@@ -68,8 +67,8 @@ void kaleidoscope_test() {
 
 	auto *dodecahedron
 		= new Dodecahedron(Vector{+0.0, 0.0, -50.0}, 1.0, optics);
-	dodecahedron->rotate_x(-12.0);
-	dodecahedron->rotate_y(-7.0);
+	dodecahedron->rotate(-12.0, 'x');
+	dodecahedron->rotate(-7.0, 'y');
 
 	// Create a sphere that overlaps with the dodecahedron.
 	const Vector SPHERE_CENTER{+255, 0.0, -50.0};
@@ -77,7 +76,7 @@ void kaleidoscope_test() {
 
 	SetIntersection isect(SPHERE_CENTER, dodecahedron, sphere);
 
-	isect.rotate_z(19.0);
+	isect.rotate(19.0, 'z');
 	isect.translate(0.0, 0.0, 10.0);
 
 	scene.add_solid_object(std::make_unique<SetIntersection>(std::move(isect)));

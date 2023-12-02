@@ -25,8 +25,8 @@ void bit_donut_test() {
 	// Is it clear enough that we wont misunderstood the whole scene "move"?
 	scene.add_solid_object(std::unique_ptr<SolidObject>(bit_donut))
 		->move_point_to(0.0, 0.0, -50.0)
-		.rotate_x(-45.0)
-		.rotate_y(-30.0);
+		.rotate(-45.0, 'x')
+		.rotate(-30.0, 'y');
 
 	// Add a light source to illuminate the objects in the scene; otherwise we
 	// won't see anything!

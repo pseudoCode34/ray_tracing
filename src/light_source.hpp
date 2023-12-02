@@ -10,12 +10,8 @@ namespace Imager {
 // Luminosity of the light source can be changed by multiplying color.red,
 // color.green, color.blue all by a constant value.
 struct LightSource {
-	// TODO: Use move semantics here?
-	// only location, or both location and color?
-	LightSource(Vector &&location, Color &&color);
-
 	Vector location;
-	Color color;
+	Color color = Color(255, 255, 255);
 };
 } // namespace Imager
 } // namespace raytracing

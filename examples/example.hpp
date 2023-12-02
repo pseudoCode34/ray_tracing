@@ -19,6 +19,6 @@ void set_intersection_test();
 void sphere_test();
 void kaleidoscope_test();
 
-void unit_tests();
+void run_all();
 }
 #endif /* ifndef EXAMPLE_HPP */

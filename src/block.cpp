@@ -15,13 +15,13 @@ ConcreteBlock::ConcreteBlock(const Vector &center, const Optics &optics)
 	move_centre_to(center);
 }
 
-SolidObject *ConcreteBlock::create_large_cuboid(const Optics &optics) {
+SolidObject *create_large_cuboid(const Optics &optics) {
 	auto *cuboid = new Cuboid(8.0, 16.0, 8.0);
 	cuboid->set_uniform_optics(optics);
 	return cuboid;
 }
 
-SolidObject *ConcreteBlock::create_small_cuboid_union(const Optics &optics) {
+SolidObject *create_small_cuboid_union(const Optics &optics) {
 	// We add a little bit in the z dimension (8.01 instead of 8.0)
 	// to guarantee completely engulfing the hole.
 
@@ -36,29 +36,5 @@ SolidObject *ConcreteBlock::create_small_cuboid_union(const Optics &optics) {
 
 	return new SetUnion(Vector{}, top_cuboid, bottom_cuboid);
 }
-
-/* std::unique_ptr<SolidObject> */
-/* ConcreteBlock::create_large_cuboid(const Optics &optics) { */
-/* 	auto cuboid = std::make_unique<Cuboid>(8.0, 16.0, 8.0); */
-/* 	cuboid->set_uniform_optics(optics); */
-/* 	return cuboid; */
-/* } */
-
-/* std::unique_ptr<SolidObject> */
-/* ConcreteBlock::create_small_cuboid_union(const Optics &optics) { */
-/* 	// We add a little bit in the z dimension (8.01 instead of 8.0) */
-/* 	// to guarantee completely engulfing the hole. */
-
-/* 	auto top_cuboid    = std::make_unique<Cuboid>(6.0, 6.5, 8.01); */
-/* 	auto bottom_cuboid = std::make_unique<Cuboid>(6.0, 6.5, 8.01); */
-
-/* 	top_cuboid->set_uniform_optics(optics); */
-/* 	bottom_cuboid->set_uniform_optics(optics); */
-
-/* 	top_cuboid->move(0.0, +7.5, 0.0); */
-/* 	bottom_cuboid->move(0.0, -7.5, 0.0); */
-
-/* 	return std::make_unique<SetUnion>(Vector{}, top_cuboid, bottom_cuboid); */
-/* } */
 } // namespace Imager
 } // namespace raytracing

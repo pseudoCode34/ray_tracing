@@ -2,7 +2,6 @@
 #include "set.hpp"
 #include "solid_object.hpp"
 
-#include <any>
 #include <range/v3/core.hpp>
 #include <range/v3/view/concat.hpp>
 #include <range/v3/view/filter.hpp>
@@ -24,7 +23,8 @@ IntersectionList SetIntersection::append_overlapping_intersections(
 	temp_intersection_list
 		= a_solid.append_all_intersections(vantage, direction);
 	auto is_inside_b_solid = [&b_solid](const Intersection &intersection) {
-		return b_solid.contains(intersection.point);
+		// FIXME: error handling here?
+		return b_solid.contains(intersection.point).value_or(false);
 	};
 	return temp_intersection_list | ranges::views::filter(is_inside_b_solid)
 		   | ranges::to<IntersectionList>();
@@ -59,11 +59,15 @@ bool SetIntersection::has_overlapping_intersection(
 	return std::ranges::any_of(
 		/* temp_intersection_list, */
 		a_solid.append_all_intersections(vantage, direction),
-		[&b_solid](const Vector &point) { return b_solid.contains(point); },
+		[&b_solid](const Vector &point) {
+			// FIXME: error handling here
+			return b_solid.contains(point).value_or(false);
+		},
 		&Intersection::point);
 }
 
-bool SetIntersection::contains(const Vector &point) const {
+std::expected<bool, ContainmentError>
+SetIntersection::contains(const Vector &point) const {
 	// A point is inside the set intersection if it is inside both of the
 	// nested solids.
 	return left().contains(point) && right().contains(point);

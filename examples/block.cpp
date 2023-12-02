@@ -14,29 +14,25 @@ namespace raytracing {
 void block_test() {
 	using namespace Imager;
 
-	// We use a "Scene" object to embody the entire model
-	Scene scene(Color(94, 115, 94, 7.0e-6));
+	Scene scene(Color(94, 115, 94));
 
-	// Create a concrete block object.
-	// We *must* use operator new to create all solids, because the Scene
-	// destructor will delete it.
-	ConcreteBlock block(Vector{0.0, 0.0, -155.0}, Optics(Color("grey")));
-	block.rotate_x(-10.0).rotate_y(-15.0);
-	scene.add_solid_object(std::make_unique<ConcreteBlock>(std::move(block)));
+	ConcreteBlock block(Vector{0.0, 0.0, -3.0}, Optics(Color("grey")));
+	block.rotate(-10.0, 'x').rotate(-15.0, 'y');
+	scene.add_solid_object(std::make_unique<ConcreteBlock>(block));
 
 	// Create a sphere and put it into the scene also.
-	Sphere sphere(Vector{10.0, 3.0, -147.0}, 3.5);
+	Sphere sphere(Vector{10.0, 3.0, -3.0}, 3.5);
 	sphere.set_full_matte(Color(153, 102, 115));
 	scene.add_solid_object(std::make_unique<Sphere>(std::move(sphere)));
 
 	// Add a light source to illuminate the objects in the scene; otherwise we
 	// won't see anything!
 	scene.add_light_source(
-		LightSource(Vector{+20.0, +20.0, +80.0}, Color(128, 26, 26, 265)));
+		LightSource(Vector{+20.0, +20.0, +80.0}, Color(128, 26, 26)));
 	scene.add_light_source(
 		LightSource(Vector{+100.0, +120.0, -70.0}, Color(51, 128, 102)));
 	scene.add_light_source(
-		LightSource(Vector{+3.0, +13.0, +80.0}, Color(153, 128, 77, 1.20)));
+		LightSource(Vector{+3.0, +13.0, +80.0}, Color(153, 128, 77)));
 
 	// Generate a PNG file that displays the scene...
 	const char *filename           = "images/block.png";

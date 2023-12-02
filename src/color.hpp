@@ -7,7 +7,6 @@
 #include <fmt/format.h>
 #include <memory>
 #include <spdlog/logger.h>
-#include <stdexcept>
 #include <stdint.h>
 
 namespace raytracing {
@@ -22,32 +21,17 @@ struct Color {
 	double alpha;
 
 	/*
-	 * [constructors]
+	 * [Color.cons]
 	 */
 
 	constexpr Color() : red(0), green(0), blue(0), alpha(1) {}
 
-	Color(int red, int green, int blue, double alpha = 1)
-		: red{red}, green{green}, blue{blue}, alpha{alpha} {
-		validate();
-	}
+	Color(int red, int green, int blue, double alpha = 1);
 
-	explicit Color(std::string_view color_name, double alpha = 1)
-		: alpha(alpha) {
-		assert(alpha >= 0 && alpha <= 1);
-		const auto *it = std::ranges::find_if(
-			COLOR_MAPPINGS,
-			[color_name](std::string_view name) { return name == color_name; },
-			&ColorMapping::name);
-
-		assert(it != COLOR_MAPPINGS.end() && "Color name is not defined.");
-		red   = it->rgb[0];
-		green = it->rgb[1];
-		blue  = it->rgb[2];
-	}
+	Color(std::string_view color_name, double alpha = 1);
 
 	/*
-	 * [operators]
+	 * [Color.operators]
 	 */
 	constexpr auto operator<=>(const Color &) const = default;
 
@@ -55,7 +39,7 @@ struct Color {
 		if (red != other.red) return false;
 		if (green != other.green) return false;
 		if (blue != other.blue) return false;
-		if (!Algebra::is_equal(alpha, other.alpha)) return false;
+		if (!Algebra::is_double_near(alpha, other.alpha)) return false;
 		return true;
 	}
 

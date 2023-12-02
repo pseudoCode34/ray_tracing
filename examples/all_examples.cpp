@@ -1,7 +1,7 @@
 #include "example.hpp"
 
 namespace raytracing {
-void unit_tests() {
+void run_all() {
 	draw_chess_board();
 	dodecahedron_overlap_test();
 	multiple_sphere_test();

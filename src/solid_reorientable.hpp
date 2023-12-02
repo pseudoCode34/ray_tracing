@@ -1,7 +1,8 @@
 #ifndef SOLID_REORIENTABLE_HPP
 #define SOLID_REORIENTABLE_HPP
 #include "solid_object.hpp"
-namespace raytracing{   
+
+namespace raytracing {
 namespace Imager {
 // This derived abstract class is specialized for objects (like torus)
 // that are easy to define in terms of a fixed orientation and position
@@ -24,15 +25,14 @@ public:
 	IntersectionList
 	append_all_intersections(const Vector &vantage,
 							 const Vector &direction) const override;
+	SolidObject &rotate(double angle_in_degrees,
+									  char axis) override;
 
-	SolidObject &rotate_x(double angle_in_degrees) override;
-	SolidObject &rotate_y(double angle_in_degrees) override;
-	SolidObject &rotate_z(double angle_in_degrees) override;
-
-	bool contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError>
+	contains(const Vector &point) const override;
 
 	Optics surface_optics(const Vector &surface_point,
-						  const void *context) const override;
+										const void *context) const override;
 
 protected:
 	// The following method is called by AppendAllIntersections, but with
@@ -96,5 +96,5 @@ private:
 	Vector z_dir_;
 };
 } // namespace Imager
-}
+} // namespace raytracing
 #endif /* ifndef SOLID_REORIENTABLE_HPP */

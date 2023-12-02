@@ -43,7 +43,7 @@ struct Intersection {
 	auto operator<=>(const Intersection &) const = default;
 
 	auto operator==(const Intersection &other) const noexcept {
-		if (!Algebra::is_equal(distance_squared, other.distance_squared))
+		if (!Algebra::is_double_near(distance_squared, other.distance_squared))
 			return false;
 		if (point != other.point) return false;
 		if (surface_normal != other.surface_normal) return false;

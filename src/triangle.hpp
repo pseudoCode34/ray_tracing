@@ -1,29 +1,57 @@
 #ifndef TRIANGLE_HPP
 #define TRIANGLE_HPP
 
-#include "algebra.hpp"
 #include "intersection.hpp"
 #include "optics.hpp"
 #include "solid_object.hpp"
 #include "vector.hpp"
 
+#include <array>
 #include <optional>
 #include <span>
 #include <stddef.h>
+#include <utility>
 #include <vector>
 
 namespace raytracing {
-namespace Algebra {
-struct LinearEquationSystemRoot;
-} // namespace Algebra
-
 namespace Imager {
+struct TrianglePoints {
+	size_t a, b, c;
+
+	constexpr bool all_unique_points() const {
+		return a != b && b != c && c != a;
+	}
+};
+
+struct QuadrilateralPoints {
+	size_t a, b, c, d;
+
+	std::array<TrianglePoints, 2> split() const {
+		// We preserve counterclockwise ordering by making two triangles:
+		// (a,b,c) and (c,d,a).
+		return std::to_array(
+			{TrianglePoints{a, b, c}, TrianglePoints{c, d, a}});
+	}
+};
+
+struct PentagonPoints {
+	size_t a, b, c, d, e;
+
+	std::array<TrianglePoints, 3> split() const {
+		return std::to_array({TrianglePoints{a, b, c},
+							  TrianglePoints{c, d, e},
+							  TrianglePoints{d, e, a}});
+	}
+};
+
+bool check_edge(const Vector &a, const Vector &b, double edge);
+
 /*
  * \brief A solid object consisting of nothing but triangular faces.
  *
- * Faces are added after construction by calling AddPoint() to append a series
- * of vertex points, followed by AddTriangle() to refer to the indices of
- * previously added points.
+ * Faces are added after construction by calling AddPoint() to append a
+ * series of vertex points, followed by AddTriangle() to refer to the
+ * indices of previously added points.
  */
 class TriangleMesh : public SolidObject {
 public:
@@ -34,27 +62,19 @@ public:
 							 const Vector &direction) const override;
 
 	SolidObject &translate(double dx, double dy, double dz) override;
-	SolidObject &rotate_x(double angle_in_degrees) override;
-	SolidObject &rotate_y(double angle_in_degrees) override;
-	SolidObject &rotate_z(double angle_in_degrees) override;
+	SolidObject &rotate(double angle_in_degrees, char axis) override;
 
-	// Appends a new vertex point whose point index is to be
-	// referenced later by AddTriangle.
-	// expectedIndex is the zero-based value that must match
-	// the insertion order of the point.
-	// For example, the first call to AddPoint must pass
-	// expectedIndex==0, the second must pass expectedIndex==1, etc.
-	// This is a sanity check so that the caller avoids insertion
-	// order mistakes, since the vertex point index will be
-	// referenced later when calling AddTriangle.
-	void add_point(int expected_index, double x, double y, double z);
+	// Appends a new vertex point whose point index is to be referenced later by
+	// AddTriangle.
+	void add_point(Vector &&point);
 
-	// Given the vertex point indices of three distinct points
-	// that have already been added (using a call to AddPoint),
-	// appends a new triangular face with those three points
-	// as vertices.  Uses the specified optical properties for this face.
-	void add_triangle(int a_point_index, int b_point_index, int c_point_index,
-					  const Optics &optics);
+	/*
+	 * Given the \param vertex point indices of three distinct points added
+	 * using a call to AddPoint, append a new triangular face with those
+	 * three points as vertices. Use the specified \param optical properties
+	 * for this face.
+	 */
+	void add_triangle(const TrianglePoints &triangle, const Optics &optics);
 
 	// A convenience method for cases where we know we have
 	// a quadrilateral surface that can be split into two triangles.
@@ -62,16 +82,13 @@ public:
 	// order viewed from outside the surface.
 	// This is important for calculating normal vectors that
 	// point outward from the solid, not inward.
-	void add_quad(int a_point_index, int b_point_index, int c_point_index,
-				  int d_point_index, const Optics &optics);
+	void add_quad(const QuadrilateralPoints &quad, const Optics &optics);
 
 	// Another convenience method for solids that
 	// have pentagonal faces. A pentagon can be split into 3 triangles.
 	// As in AddTriangle and AddQuad, the caller must pass the point
 	// indices in a counterclockwise order as seen from outside the solid.
-	void add_pentagon(int a_point_index, int b_point_index, int c_point_index,
-					  int d_point_index, int e_point_index,
-					  const Optics &optics);
+	void add_pentagon(const PentagonPoints &pentagon, const Optics &optics);
 
 	// Because each triangle can have different optics, we need
 	// to override SurfaceOptics() to replace the default behavior
@@ -80,7 +97,7 @@ public:
 						  const void *context) const override;
 
 protected:
-	void validate_point_index(size_t point_index) const;
+	void validate(const TrianglePoints &points) const;
 
 	// Attempts to find an intersection of the given direction
 	// passing through the given vantage point with the plane
@@ -101,7 +118,7 @@ protected:
 	// Note that it is possible that calling AttemptPlaneIntersection
 	// may succeed with one ordering of the plane points (A, B, C),
 	// but may fail on another ordering.
-	static std::optional<Algebra::LinearEquationSystemRoot>
+	static std::expected<Eigen::Vector3d, Algebra::EquationSystemResultType>
 	attempt_plane_intersection(const Vector &vantage, const Vector &direction,
 							   std::span<Vector, 3> points);
 
@@ -128,15 +145,10 @@ private:
 };
 
 struct TriangleMesh::Triangle {
-	int a{};       // index into pointList for first  vertex of
-				   // the triangle
-	int b{};       // index into pointList for second vertex of
-				   // the triangle
-	int c{};       // index into pointList for third  vertex of
-				   // the triangle
-
+	TrianglePoints points;
 	Optics optics; // surface color of the triangle
 };
+
 
 } // namespace Imager
 } // namespace raytracing
