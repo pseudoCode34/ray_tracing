@@ -3,7 +3,6 @@ add_subdirectory(lodepng)
 add_executable(
     unit_test
     # EXCLUDE_FROM_ALL
-    # algebra/algebra_test.cpp
     algebra/quadratic_test.cpp
     algebra/linear_equation_system.cpp
     algebra/cubic_test.cpp
@@ -11,7 +10,8 @@ add_executable(
     color/color_test.cpp
     concrete_block/large_cuboid_test.cpp
     concrete_block/small_cuboid_test.cpp
-    optics/optics_test.cpp
+    optics/balance_matte_gloss.cpp
+    optics/optics_constructor_test.cpp
     vector/vector_test.cpp
     intersection/intersection_test.cpp
     intersection/pick_closest_intersection_test.cpp)
@@ -22,20 +22,16 @@ target_link_libraries(
             GTest::gtest_main
             GTest::gmock
             pthread # pthread is needed on Unix-like systems
-            Boost::math
-            eigen
-            Algebra
+			Eigen3::Eigen
             Imager)
 
 target_include_directories(unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
     target_compile_options(
-        unit_test
-        PRIVATE -O1 -fsanitize=undefined
-        # PRIVATE -fsanitize=leak
-	)
-
+        unit_test PRIVATE -O1 -fsanitize=undefined # PRIVATE -fsanitize=leak
+    )
+    target_link_options(unit_test PRIVATE -fsanitize=undefined)
 endif()
 
 if(BUILD_TESTING)

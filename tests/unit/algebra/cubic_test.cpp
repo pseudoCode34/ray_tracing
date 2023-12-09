@@ -1,13 +1,11 @@
+#include "algebra.hpp"
 #include "algebra_test.hpp"
 
 #include <array>
-#include <boost/math/tools/cubic_roots.hpp>
-#include <fmt/ranges.h>
 #include <gtest/gtest.h>
 #include <limits>
 
-namespace raytracing {
-namespace Algebra {
+namespace raytracing::Algebra {
 TEST(CubicEquation, RealCoeffComplexRootTreatedAsNan) {
 	// given
 	using namespace std::complex_literals;
@@ -17,9 +15,7 @@ TEST(CubicEquation, RealCoeffComplexRootTreatedAsNan) {
 		std::numeric_limits<double>::quiet_NaN()};
 
 	// when
-	using boost::math::tools::cubic_roots;
-	auto actual_roots = cubic_roots(1.0, -3.0, 1.0, -3.0);
-	fmt::println("{}", actual_roots);
+	auto actual_roots = solve_cubic(1.0, -3.0, 1.0, -3.0);
 
 	// then
 	ASSERT_THAT(actual_roots,
@@ -38,5 +34,4 @@ TEST(CubicEquation, RealCoeffRealRoots) {
 	EXPECT_THAT(actual_roots, ElementsAreArray(expected_roots));
 }
 
-} // namespace Algebra
-} // namespace raytracing
+} // namespace raytracing::Algebra

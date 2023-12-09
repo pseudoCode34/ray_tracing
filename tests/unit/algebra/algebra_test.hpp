@@ -1,10 +1,7 @@
 #ifndef ALGEBRA_TEST
 #define ALGEBRA_TEST
 
-#include "common_constants.hpp"
-
 #include <complex>
-#include <concepts>
 #include <fmt/format.h>
 #include <gmock/gmock-matchers.h>
 #include <gmock/gmock.h>
@@ -30,8 +27,7 @@ struct fmt::formatter<T> {
 	}
 };
 
-namespace raytracing {
-namespace Algebra {
+namespace raytracing::Algebra {
 
 using namespace testing;
 auto custom_complex_less
@@ -57,7 +53,7 @@ inline bool is_double_near(double actual, double expected,
 
 template <ComplexNumber T, std::floating_point Float>
 bool operator==(const T &lhs, const T &rhs) {
-	return std::norm(lhs) < std::norm(rhs);
+	return std::norm(lhs) == std::norm(rhs);
 }
 
 MATCHER_P2(ComplexNear, expected, max_abs_error, "") {
@@ -135,6 +131,6 @@ MATCHER_P2(NanSensitiveElementsNearArray, expected, max_abs_error, "") {
 
 	return true;
 }
-} // namespace Algebra
-} // namespace raytracing
+} // namespace raytracing::Algebra
+
 #endif /* ifndef ALGEBRA_TEST */

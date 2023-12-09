@@ -1,7 +1,5 @@
 #include "set.hpp"
 
-#include <memory>
-
 namespace raytracing {
 namespace Imager {
 SetDifference::SetDifference(const Vector &center, SolidObject *left,

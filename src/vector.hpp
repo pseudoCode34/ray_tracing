@@ -3,11 +3,9 @@
 
 #include "common_constants.hpp"
 
-#include <compare>
 #include <fmt/format.h>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 struct Vector {
 	double x, y, z;
@@ -33,10 +31,12 @@ struct Vector {
 
 	/*
 	 * \brief Returns the magnitude of this vector.
-	 *
+	 * \note std::sqrt is not constexpr in C++20 yet! Only in C++23 or later.
 	 * \see magnitude_squared()
 	 */
-	[[nodiscard]] double magnitude() const;
+	[[nodiscard]] constexpr double magnitude() const {
+		return std::sqrt(magnitude_squared());
+	}
 
 	/*
 	 * \brief Returns the square the magnitude of this vector.
@@ -65,8 +65,7 @@ struct Vector {
 	/*
 	 * \brief Returns the square the magnitude of this vector.
 	 */
-	[[nodiscard]]
-	constexpr double dot(const Vector &other) const {
+	[[nodiscard]] constexpr double dot(const Vector &other) const {
 		return x * other.x + y * other.y + z * other.z;
 	}
 
@@ -132,8 +131,8 @@ struct Vector {
 	Vector &operator+=(const Vector &rhs);
 	friend Vector operator+(Vector lhs, const Vector &rhs);
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 
 template <>
 struct fmt::formatter<raytracing::Imager::Vector> {

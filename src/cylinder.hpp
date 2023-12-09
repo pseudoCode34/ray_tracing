@@ -3,11 +3,11 @@
 #include "intersection.hpp"
 #include "solid_reorientable.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct Vector;
 
-/* A circular, right cylinder (may be used to make "tin can" shapes, discs with
+/*
+ * A circular, right cylinder (may be used to make "tin can" shapes, discs with
  * thickness, etc.) Consists of a curved lateral surface and a top and bottom
  * disc.
  */
@@ -30,6 +30,6 @@ private:
 	const double HALF_HEIGHT;
 };
 
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /* ifndef CYLINDER_HPP */

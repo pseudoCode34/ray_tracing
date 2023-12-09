@@ -3,8 +3,7 @@
 #include "solid_object.hpp"
 #include <memory>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 // This class encapsulates the notion of a binary operator that operates on two
 // SolidObjects. Both SolidObjects must support the Contains() method, or an
 // exception will occur during rendering.
@@ -42,6 +41,6 @@ private:
 	std::shared_ptr<SolidObject> left_, right_;
 };
 
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /* ifndef SOLID_OBJECT_BINARY */

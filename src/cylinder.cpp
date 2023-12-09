@@ -1,11 +1,9 @@
 #include "cylinder.hpp"
 
+#include "algebra.hpp"
 #include "vector.hpp"
 
-#include <array>
-#include <boost/math/tools/roots.hpp>
 #include <math.h>
-#include <vector>
 
 namespace raytracing {
 namespace Imager {
@@ -35,11 +33,10 @@ Cylinder::object_space_append_all_intersections(const Vector &vantage,
 	}
 
 	// Look for intersections with the curved lateral surface of the cylinder.
-	const auto [root0, root1] = boost::math::tools::quadratic_roots(
+	const auto roots = Algebra::solve_quadratic(
 		direction.magnitude_sqr_in_plane(),
 		vantage.dot(direction) * 2,
 		vantage.magnitude_sqr_in_plane() - RADIUS * RADIUS);
-	const auto roots = std::to_array<double, 2>({root0, root1});
 	for (const auto &root : roots) {
 		if (root > EPSILON) {
 			Vector displacement = root * direction;

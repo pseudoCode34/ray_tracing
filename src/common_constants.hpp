@@ -1,12 +1,13 @@
 #ifndef COMMON_CONSTANTS_HPP
 #define COMMON_CONSTANTS_HPP
 
+#include <cstdint>
 #include <numbers>
 
 namespace raytracing {
 using std::numbers::pi;
 
-constexpr double PIXEL_8BIT_MAX_COLOR = 255.0;
+constexpr uint8_t MAX_COLOR_8BIT = 255;
 
 /*
  * \brief EPSILON is a tolerance value for floating point roundoff error.
@@ -22,7 +23,5 @@ constexpr double radian_from_degree(double degree) {
 	constexpr double PI_RADIAN = 180.0;
 	return degree * (pi / PI_RADIAN);
 }
-
-
 } // namespace raytracing
 #endif /* ifndef COMMON_CONSTANTS_HPP */

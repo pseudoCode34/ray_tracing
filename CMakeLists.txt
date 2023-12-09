@@ -29,6 +29,8 @@ if(${CMAKE_SOURCE_DIR} STREQUAL ${CMAKE_BINARY_DIR})
 endif()
 
 include(FetchContent)
+# set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
+
 include(cmake/FindFmt.cmake)
 include(cmake/FindLodePNG.cmake)
 include(cmake/FindSpdlog.cmake)
@@ -39,8 +41,6 @@ include(cmake/FindBoostMath.cmake)
 include(cmake/FindEigen.cmake)
 
 if(PROJECT_IS_TOP_LEVEL)
-    set(FETCHCONTENT_TRY_FIND_PACKAGE_MODE ALWAYS)
-
     enable_testing()
     # Testing only available if this is the main app.
     add_subdirectory(tests)

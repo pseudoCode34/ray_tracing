@@ -1,14 +1,15 @@
 #include "torus.hpp"
+#include <cstddef>
+#include <memory>
 
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
 #include "scene.hpp"
 #include "set.hpp"
+#include "solid_object.hpp"
 
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void torus_test(const char *image_file, double gloss_factor) {
 	using namespace Imager;
 
@@ -48,4 +49,4 @@ void torus_test(const char *image_file, double gloss_factor) {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

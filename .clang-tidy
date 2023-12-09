@@ -1,24 +1,26 @@
 Checks: >
   -*,
 
-  # bugprone-easily-swappable-parameters,
-  bugprone-use-after-move,
+  bugprone-*,
+  -bugprone-easily-swappable-parameters,
 
   cert-*,
   clang-diagnostic-*,
   clang-analyzer-*,
-  # cppcoreguidelines-*,
+  cppcoreguidelines-*,
+  -cppcoreguidelines-avoid-magic-numbers,
 
   llvm-*,
+  -llvm-include-order,
 
   misc-*,
-  -misc-const-correctness,
-  -misc-unused-parameters,
   -misc-non-private-member-variables-in-classes,
   -misc-no-recursion,
-  -misc-header-include-cycle,
   -misc-include-cleaner,
   -misc-use-anonymous-namespace,
+
+  modernize-*,
+  -modernize-use-trailing-return-type
 
   readability-identifier-naming,
   readability-const-return-type

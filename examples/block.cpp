@@ -1,27 +1,31 @@
 #include "block.hpp"
 
+#include <cstddef>
+#include <memory>
+#include <string_view>
+#include <utility>
+
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
 #include "optics.hpp"
 #include "scene.hpp"
+#include "solid_object.hpp"
 #include "sphere.hpp"
 #include "vector.hpp"
 
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void block_test() {
 	using namespace Imager;
 
 	Scene scene(Color(94, 115, 94));
 
-	ConcreteBlock block(Vector{0.0, 0.0, -3.0}, Optics(Color("grey")));
+	ConcreteBlock block(Vector{0.0, 0.0, -155}, Optics(Color("grey")));
 	block.rotate(-10.0, 'x').rotate(-15.0, 'y');
 	scene.add_solid_object(std::make_unique<ConcreteBlock>(block));
 
 	// Create a sphere and put it into the scene also.
-	Sphere sphere(Vector{10.0, 3.0, -3.0}, 3.5);
+	Sphere sphere(Vector{10., 3., -147}, 3.5);
 	sphere.set_full_matte(Color(153, 102, 115));
 	scene.add_solid_object(std::make_unique<Sphere>(std::move(sphere)));
 
@@ -47,4 +51,4 @@ void block_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

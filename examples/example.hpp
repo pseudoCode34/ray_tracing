@@ -1,7 +1,7 @@
 #ifndef EXAMPLE_HPP
 #define EXAMPLE_HPP
 
-namespace raytracing{
+namespace raytracing::Imager {
 void block_test();
 void draw_chess_board();
 void dodecahedron_overlap_test();
@@ -20,5 +20,5 @@ void sphere_test();
 void kaleidoscope_test();
 
 void run_all();
-}
+} // namespace raytracing::Imager
 #endif /* ifndef EXAMPLE_HPP */

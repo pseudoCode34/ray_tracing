@@ -1,16 +1,14 @@
 #include "chessboard.hpp"
 
-#include "example.hpp"
+#include <cstddef>
+#include <memory>
+#include <string_view>
+
 #include "light_source.hpp"
 #include "scene.hpp"
-#include "solid_object.hpp"
-#include "sphere.hpp"
 #include "vector.hpp"
 
-#include <array>
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 struct sphere_info {
 	Imager::Vector center;
 	double radius;
@@ -74,4 +72,4 @@ void draw_chess_board() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

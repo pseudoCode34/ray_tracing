@@ -6,8 +6,7 @@
 #include <math.h>
 #include <utility>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 bool is_inside_chechered_part(const Imager::Vector &surface_point,
 							  double inner_size) {
 	const double HALF = inner_size / 2.0;
@@ -68,5 +67,4 @@ Optics ChessBoard::object_space_surface_optics(const Vector &surface_point,
 
 	return optics;
 }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

@@ -1,3 +1,10 @@
+#include <array>
+#include <cmath>
+#include <cstddef>
+#include <memory>
+#include <string_view>
+#include <utility>
+
 #include "algebra.hpp"
 #include "color.hpp"
 #include "example.hpp"
@@ -10,22 +17,15 @@
 #include "sphere.hpp"
 #include "vector.hpp"
 
-#include <array>
-#include <math.h>
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void add_kaleidoscope_mirrors(Imager::Scene &scene, double width,
 							  double depth) {
-	using namespace Imager;
-
 	// Create three cuboids, one for each mirror
 	double a = width * 2;
 	double b = 0.1; // thickness doesn't really matter
 	double c = depth * 2;
 
-	Optics optics;
-	optics.balance_matte_gloss(1.0, Color("white"), Color("white"));
+	Optics optics = balance_matte_gloss(1.0, Color("white"), Color("white"));
 
 	auto make_mirror = [&optics](double a, double b, double c) {
 		auto *mirror = new Cuboid(a, b, c);
@@ -58,8 +58,6 @@ void add_kaleidoscope_mirrors(Imager::Scene &scene, double width,
 }
 
 void kaleidoscope_test() {
-	using namespace Imager;
-
 	Scene scene;
 	add_kaleidoscope_mirrors(scene, 0.5, 10.0);
 
@@ -106,4 +104,4 @@ void kaleidoscope_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

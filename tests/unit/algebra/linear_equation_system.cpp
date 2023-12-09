@@ -2,8 +2,7 @@
 
 #include <gtest/gtest.h>
 
-namespace raytracing {
-namespace Algebra {
+namespace raytracing::Algebra {
 
 TEST(Matrix3x3DoubleTest, UniqueSolution) {
 	// given
@@ -42,5 +41,4 @@ TEST(Matrix3x3DoubleTest, InfiniteSolution) {
 	ASSERT_FALSE(solution.has_value());
 	EXPECT_EQ(solution.error(), EquationSystemResultType::INFINITE);
 }
-} // namespace Algebra
-} // namespace raytracing
+} // namespace raytracing::Algebra

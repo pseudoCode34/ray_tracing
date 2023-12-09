@@ -1,14 +1,15 @@
+#include <memory>
+#include <string_view>
+#include <utility>
+
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
 #include "polyhedra.hpp"
 #include "scene.hpp"
-#include "solid_object.hpp"
 #include "vector.hpp"
 
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void cuboid_test() {
 	using namespace Imager;
 
@@ -36,4 +37,4 @@ void cuboid_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

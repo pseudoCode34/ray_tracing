@@ -1,11 +1,8 @@
 #include "binary.hpp"
-
 #include "vector.hpp"
+#include <spdlog/spdlog.h>
 
-#include <cmath>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 // All rotations and translations are applied to the two nested solids in
 // tandem.
 
@@ -57,12 +54,8 @@ void SolidObject_BinaryOperator::nested_rotate(SolidObject &nested,
 		nested.move_point_to(c.x + (cos_val * dx - sin_val * dy),
 							 c.y + (cos_val * dy + sin_val * dx),
 							 nc.z);
-
 		break;
-	default:
-		// FIXME: Consider a throw here
-		fmt::println(stderr, "Invalid axis specified.");
+	default: spdlog::error("Invalid axis specified.");
 	}
 }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

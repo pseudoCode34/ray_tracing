@@ -1,11 +1,7 @@
 #include "vector.hpp"
 
-#include <cmath>
-
 namespace raytracing {
 namespace Imager {
-// std::sqrt is not constexpr in C++20 yet! Only in C++23 or later.
-double Vector::magnitude() const { return std::sqrt(magnitude_squared()); }
 
 Vector Vector::unit_vector() const {
 	const double MAG = magnitude();

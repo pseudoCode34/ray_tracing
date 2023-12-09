@@ -6,10 +6,7 @@
 #include <string_view>
 
 namespace raytracing {
-//---------------------------------------------------------------------------
-// Define a new type that is a pointer to a function
-// with void return type and taking zero arguments.
-typedef void (*COMMAND_FUNCTION)();
+using COMMAND_FUNCTION = void (*)();
 
 struct CommandEntry {
 	std::string_view subcommand, usage;
@@ -19,20 +16,24 @@ struct CommandEntry {
 // You can add more command line options to this program by adding another entry
 // to the array below. Each item in the ray is a string followed by a function
 // to be called when that string appears on the command line.
-const auto COMMAND_TABLE = std::to_array<CommandEntry>({
+constexpr auto COMMAND_TABLE = std::to_array<CommandEntry>({
 	{"test",
 	 "\tRuns a series of unit tests that generate sample PNG images.\n",
-	 unit_tests},
-	{"spheroid", "\tGenerates an image of a spheroid.\n", spheroid_test},
+	 Imager::run_all},
+	{"spheroid",
+	 "\tGenerates an image of a spheroid.\n",
+	 Imager::spheroid_test},
 	{"chessboard",
 	 "\tChess board and transparent spheres.\n",
-	 draw_chess_board},
+	 Imager::draw_chess_board},
 	{"block",
 	 "\tConcrete block with a sphere casting a shadow on it.\n",
-	 block_test},
-	{"kaleid", "\tKaleidoscope using three mirrors.\n", kaleidoscope_test},
-	{"multisphere", "\tGenerate 2 spheres", multiple_sphere_test},
-	{"sphere", "\tGenerate a sphere", sphere_test},
+	 Imager::block_test},
+	{"kaleid",
+	 "\tKaleidoscope using three mirrors.\n",
+	 Imager::kaleidoscope_test},
+	{"multisphere", "\tGenerate 2 spheres", Imager::multiple_sphere_test},
+	{"sphere", "\tGenerate a sphere", Imager::sphere_test},
 });
 
 void print_help() {
@@ -55,14 +56,15 @@ int main(int argc, const char *argv[]) {
 	}
 
 	using raytracing::COMMAND_TABLE, raytracing::CommandEntry;
-	if (const auto *result
+	const auto *result
 		= std::ranges::find(COMMAND_TABLE, argv[1], &CommandEntry::subcommand);
-		result != std::ranges::end(COMMAND_TABLE)) {
-		fmt::println("Performing {}", argv[1]);
-		result->callback();
-		return EXIT_SUCCESS;
+	if (result == std::ranges::end(COMMAND_TABLE)) {
+		auto main_logger = spdlog::basic_logger_mt("main", "logs/main.txt");
+		main_logger->error("Unknown command line option '{}'", argv[1]);
+		return EXIT_FAILURE;
 	}
-	auto main_logger = spdlog::basic_logger_mt("main", "logs/main.txt");
-	main_logger->error("Unknown command line option '{}'", argv[1]);
-	return EXIT_FAILURE;
+
+	fmt::println("Performing {}", argv[1]);
+	result->callback();
+	return EXIT_SUCCESS;
 }

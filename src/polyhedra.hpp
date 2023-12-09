@@ -5,8 +5,7 @@
 #include "solid_reorientable.hpp"
 #include "triangle.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 // A box with rectangular faces, all of which are mutually perpendicular.
 class Cuboid : public SolidObject_Reorientable {
@@ -28,10 +27,11 @@ private:
 // 12 faces, 20 edges
 class Dodecahedron : public TriangleMesh {
 public:
-	explicit Dodecahedron(const Vector &center, double scale, const Optics &optics);
+	explicit Dodecahedron(const Vector &center, double scale,
+						  const Optics &optics);
 
 private:
-	void add_face(const PentagonPoints& pentagon, const Optics &optics,
+	void add_face(const PentagonPoints &pentagon, const Optics &optics,
 				  double edge);
 };
 
@@ -41,6 +41,6 @@ private:
 struct Icosahedron : TriangleMesh {
 	Icosahedron(const Vector &center, double scale, const Optics &optics);
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif // __DDC_POLYHEDRA_H

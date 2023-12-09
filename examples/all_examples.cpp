@@ -1,6 +1,6 @@
 #include "example.hpp"
 
-namespace raytracing {
+namespace raytracing::Imager {
 void run_all() {
 	draw_chess_board();
 	dodecahedron_overlap_test();
@@ -19,4 +19,4 @@ void run_all() {
 	set_intersection_test();
 	sphere_test();
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

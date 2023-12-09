@@ -8,12 +8,7 @@
 
 #include <gtest/gtest.h>
 
-namespace raytracing {
-using Imager::Intersection;
-using Imager::SolidObject;
-using Imager::Sphere;
-using Imager::Vector;
-
+namespace raytracing::Imager {
 struct IntersectionAttributeTest : public testing::Test {
 	void SetUp() final {
 		object = new Sphere(Vector{0, 1, 0}, 1.2);
@@ -26,5 +21,5 @@ struct IntersectionAttributeTest : public testing::Test {
 	SolidObject *object;
 	Intersection under_test;
 };
-} // namespace raytracing
+} // namespace raytracing::Imager
 #endif /* ifndef INTERSECTION_TEST_HPP */

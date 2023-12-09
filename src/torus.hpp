@@ -3,10 +3,10 @@
 #include "vector.hpp"
 
 #include <vector>
-namespace raytracing{   
-namespace Imager {
 
-class Torus : public SolidObject_Reorientable{
+namespace raytracing::Imager {
+
+class Torus : public SolidObject_Reorientable {
 public:
 	Torus(double r, double s);
 
@@ -25,5 +25,5 @@ private:
 	const double R; // distance from center of hole to center of tube
 	const double S; // distance from center of tube to outside of tube
 };
-}
-} // namespace Imager
+} // namespace raytracing::Imager
+

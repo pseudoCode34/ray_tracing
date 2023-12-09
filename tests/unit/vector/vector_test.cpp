@@ -1,8 +1,9 @@
 #include "vector_test.hpp"
 
 #include <gtest/gtest-printers.h>
+#include <limits>
 
-namespace raytracing {
+namespace raytracing::Imager {
 
 TEST_F(VectorTest, IsEmptyInitially) {
 	constexpr Vector ZERO{};
@@ -59,7 +60,7 @@ TEST_F(VectorTest, FloatingPointScalarMultiply) {
 			  (Vector{0.56568542, -0.20412415, -57.91008319}));
 	EXPECT_EQ(vector3 * -exp(4),
 			  (Vector{-5.99821986e+01, 7.90121513e+01, -2.77387339e-03}));
-	EXPECT_EQ(vector4 * (1 / 3), (Vector{}));
+	EXPECT_EQ(vector4 * (1. / 3), (Vector{}));
 }
 
 TEST_F(VectorTest, ScalarDivision) {
@@ -82,13 +83,14 @@ TEST_F(VectorTest, Magnitude) {
 }
 
 TEST_F(VectorTest, Normalize) {
+	auto nan = std::numeric_limits<double>::quiet_NaN();
 	EXPECT_EQ(vector1.unit_vector(),
 			  (Vector{0.26726124, 0.53452248, 0.80178373}));
 	EXPECT_EQ(vector2.unit_vector(),
 			  (Vector{-0.00976781, 0.00352466, 0.99994608}));
 	EXPECT_EQ(vector3.unit_vector(),
 			  (Vector{6.04654829e-01, -7.96487625e-01, 2.79622285e-05}));
-	EXPECT_EQ(vector4.unit_vector(), (Vector{NAN, NAN, NAN}));
+	EXPECT_EQ(vector4.unit_vector(), (Vector{nan, nan, nan}));
 }
 
 TEST_F(VectorTest, DotProduct) {
@@ -117,4 +119,4 @@ TEST_F(VectorTest, CrossProduct) {
 	EXPECT_EQ(vector3.cross(vector4), (Vector{}));
 	EXPECT_EQ(vector4.cross(vector1), (Vector{}));
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

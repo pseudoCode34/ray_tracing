@@ -1,8 +1,7 @@
 #ifndef OPTICAL_CONSTANTS_HPP
 #define OPTICAL_CONSTANTS_HPP
 
-namespace raytracing {
-namespace optical {
+namespace raytracing::optical {
 // A limit to how deeply in recursion CalculateLighting may go before it gives
 // up, so as to avoid call stack overflow.
 constexpr int RECURSION_LIMIT = 20;
@@ -16,6 +15,6 @@ constexpr int RECURSION_LIMIT = 20;
  * image.
  */
 constexpr double MIN_INTENSITY = 0.001;
-} // namespace optical
-} // namespace raytracing
+} // namespace raytracing::optical
+
 #endif /* ifndef OPTICAL_CONSTANTS_HPP */

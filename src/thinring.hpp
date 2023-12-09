@@ -3,8 +3,7 @@
 #include "intersection.hpp"
 #include "solid_reorientable.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct Vector;
 
 // A thin ring is a zero-thickness circular disc with an optional
@@ -43,6 +42,6 @@ private:
 struct ThinDisc : ThinRing {
 	ThinDisc(double radius);
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /* ifndef THINRING_HPP */

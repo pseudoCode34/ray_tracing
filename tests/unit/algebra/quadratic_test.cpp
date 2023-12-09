@@ -1,24 +1,23 @@
+#include "algebra.hpp"
 #include "algebra_test.hpp"
+#include "common_constants.hpp"
 
-#include <boost/math/tools/roots.hpp>
+#include <array>
 #include <complex>
 #include <gtest/gtest.h>
 #include <utility>
 
-namespace raytracing {
-
-namespace Algebra {
+namespace raytracing::Algebra {
 TEST(QuadraticEquation, RealCoeffRealRoots) {
 	// given
-	const auto EXPECTED_ROOTS = std::make_pair(1, 2);
+	const auto EXPECTED_ROOTS = std::to_array({1, 2});
 
 	// when
-	const auto ACTUAL_ROOTS = boost::math::tools::quadratic_roots(1, -3, 2);
+	const auto ACTUAL_ROOTS = solve_quadratic(1, -3, 2);
 
 	// then
-	EXPECT_THAT(ACTUAL_ROOTS,
-				FieldsAre(DoubleNear(EXPECTED_ROOTS.first, EPSILON),
-						  DoubleNear(EXPECTED_ROOTS.second, EPSILON)));
+	ASSERT_THAT(ACTUAL_ROOTS,
+				NanSensitiveElementsNearArray(EXPECTED_ROOTS, EPSILON));
 }
 
 TEST(QuadraticEquation, RealCoeffComplexRoots) {
@@ -28,8 +27,8 @@ TEST(QuadraticEquation, RealCoeffComplexRoots) {
 		= std::make_pair(-1. - 1.41421356i, -1. + 1.41421356i);
 
 	// when
-	const auto ACTUAL_ROOTS
-		= boost::math::tools::quadratic_roots(std::complex<double>(1),
+	using boost::math::tools::quadratic_roots;
+	const auto ACTUAL_ROOTS = quadratic_roots(std::complex<double>(1),
 											  std::complex<double>(2),
 											  std::complex<double>(3));
 
@@ -55,5 +54,4 @@ TEST(QuadraticEquation, ComplexCoeffAndRoots) {
 						  ComplexNear(EXPECTED_ROOTS.second, EPSILON)));
 }
 
-} // namespace Algebra
-} // namespace raytracing
+} // namespace raytracing::Algebra

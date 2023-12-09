@@ -1,19 +1,15 @@
 #include "triangle.hpp"
 
 #include "algebra.hpp"
-#include "imager.hpp"
 #include "solid_object.hpp"
 
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <compare>
-#include <fmt/core.h>
-#include <optional>
 #include <span>
+#include <spdlog/spdlog.h>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 TriangleMesh::TriangleMesh(const Vector &center, bool is_fully_enclosed)
 	: SolidObject(center, is_fully_enclosed) {}
@@ -156,8 +152,7 @@ Vector TriangleMesh::normal_vector(const Triangle &triangle) const {
 }
 
 SolidObject &TriangleMesh::translate(double dx, double dy, double dz) {
-	// chain to base class method, so that
-	// center gets translated correctly.
+	// chain to base class method, so center gets translated correctly.
 	SolidObject::translate(dx, dy, dz);
 
 	for (Vector &point : point_list_) {
@@ -190,9 +185,7 @@ SolidObject &TriangleMesh::rotate(double angle_in_degrees, char axis) {
 			point.x = CENTER.x + (cos_val * dx - sin_val * dy);
 			point.y = CENTER.y + (cos_val * dy + sin_val * dx);
 			break;
-		default:
-			// FIXME: Consider a throw here
-			fmt::println(stderr, "Invalid axis specified.");
+		default: spdlog::error("Invalid axis specified.");
 		}
 	}
 
@@ -212,7 +205,6 @@ bool check_edge(const Vector &a, const Vector &b, double edge) {
 	double distance = (b - a).magnitude();
 
 	double error = std::abs((distance - edge) / edge);
-	return error > EPSILON;
+	return Algebra::is_positve(error);
 }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

@@ -40,7 +40,7 @@ Debug
 Release
 AppleClangBuild
 XcodeBuild
-
+QtDebug
 # CMake cache
 .cache
 compile_commands.json
@@ -48,6 +48,7 @@ compile_commands.json
 # include-what-you-use generated files and folders
 iwyu.out
 build-iwyu
+iwyu
 
 # logs
 logs
@@ -56,10 +57,13 @@ logs
 docs
 
 # Qt generated file
-CMakeLists.txt.user 
+CMakeLists.txt.user
 
 # images output
 images
 
 # binary executable folders
 bin
+
+# CTest temporaries
+Testing

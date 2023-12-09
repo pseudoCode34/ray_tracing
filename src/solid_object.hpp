@@ -6,11 +6,8 @@
 #include "refraction_constants.hpp"
 
 #include <expected>
-#include <memory>
 
-namespace raytracing {
-namespace Imager {
-
+namespace raytracing::Imager {
 enum class ContainmentError {
 	MISSING_BOUNDARY,
 	AMBIGUOUS_TRANSISTION,
@@ -22,7 +19,11 @@ public:
 	explicit SolidObject(const Vector &center   = {},
 						 bool is_fully_enclosed = true);
 
-	virtual ~SolidObject() {}
+	SolidObject(const SolidObject &)            = default;
+	SolidObject(SolidObject &&)                 = delete;
+	SolidObject &operator=(const SolidObject &) = default;
+	SolidObject &operator=(SolidObject &&)      = delete;
+	virtual ~SolidObject()                      = default;
 
 	/*
 	 * \brief Appends to 'intersectionList' all the intersections found starting
@@ -170,6 +171,6 @@ private:
 	mutable IntersectionList cached_intersection_list_;
 	mutable IntersectionList enclosure_list_;
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /*ifndef SOLID_OBJECT_HPP*/

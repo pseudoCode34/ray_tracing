@@ -5,10 +5,7 @@
 #include "solid_object.hpp"
 #include "spheroid.hpp"
 
-#include <memory>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 class SolidObject;
 struct Color;
 
@@ -16,7 +13,7 @@ constexpr double MEAN_EARTH_RADIUS_KM = 6371.0;
 
 class Planet : public Spheroid {
 public:
-	Planet(const Color& color, double equatorial_radius_in_km,
+	Planet(const Color &color, double equatorial_radius_in_km,
 		   double polar_radius_in_km);
 };
 
@@ -27,6 +24,6 @@ public:
 private:
 	static SolidObject *create_ring_system();
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif // __DDC_IMAGER_PLANET_H

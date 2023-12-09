@@ -7,9 +7,7 @@
 #include <fmt/format.h>
 #include <vector>
 
-namespace raytracing {
-
-namespace Imager {
+namespace raytracing::Imager {
 class SolidObject;
 
 // Provides information about a ray intersecting with a point on the surface of
@@ -20,18 +18,18 @@ struct Intersection {
 	// point.
 	double distance_squared = 1.0e+20; // larger than any reasonable value
 
-	Vector point;
+	Vector point{};
 
 	// The unit vector perpendicular to the surface at the intersection point.
-	Vector surface_normal;
+	Vector surface_normal{};
 
 	// A pointer to the solid object that the ray intersected with.
-	const SolidObject *solid;
+	const SolidObject *solid{};
 
 	// An optional tag for classes derived from SolidObject to cache
 	// arbitrary information about surface optics. Most classes can
 	// safely leave this pointer as NULL, its default value.
-	const void *context;
+	const void *context{};
 
 	// An optional tag used for debugging.
 	// Anything that finds an intersection may elect to make tag point at a
@@ -39,7 +37,7 @@ struct Intersection {
 	// multiple surfaces was involved. This is just a char* instead of
 	// std::string to minimize overhead by eliminating dynamic memory
 	// allocation.
-	const char *tag;
+	const char *tag{};
 	auto operator<=>(const Intersection &) const = default;
 
 	auto operator==(const Intersection &other) const noexcept {
@@ -52,8 +50,7 @@ struct Intersection {
 	}
 };
 
-using IntersectionList
-	= std::vector<Intersection>;
+using IntersectionList = std::vector<Intersection>;
 
 enum class IntersectionResultType { NOT_FOUND, UNIQUE, AMBIGIOUS, ACCEPTABLE };
 
@@ -66,28 +63,25 @@ enum class IntersectionResultType { NOT_FOUND, UNIQUE, AMBIGIOUS, ACCEPTABLE };
 struct IntersectionResult {
 	// a value (that is supposed to be a stored value)
 	Intersection value;
-	// an enum flag (that may show if an appropriate intersection can be
-	// found)
-	IntersectionResultType err;
+	// an enum flag (that may show if an appropriate intersection can be found)
+	IntersectionResultType err = IntersectionResultType::NOT_FOUND;
 };
 
 IntersectionResult pick_closest_intersection(const IntersectionList &list);
-} // namespace Imager
-
-} // namespace raytracing
+} // namespace raytracing::Imager
 
 template <>
 struct fmt::formatter<raytracing::Imager::Intersection> {
 	constexpr auto parse(fmt::format_parse_context &ctx) { return ctx.begin(); }
 
-	auto format(const raytracing::Imager::Intersection &intersection,
-				fmt::format_context &ctx) {
+	constexpr auto format(const raytracing::Imager::Intersection &intersection,
+						  fmt::format_context &ctx) {
 		const auto
 			&[distance_squared, point, surface_normal, solid, context, tag]
 			= intersection;
 		return fmt::format_to(ctx.out(),
-							  "(point = {}, "
-							  "surface_normal = {}, solid = {})",
+							  "(Intersection) = (\n\tpoint = {},\n\t"
+							  "surface_normal = {}\n\t, solid = {}\n)",
 							  distance_squared,
 							  point,
 							  surface_normal);

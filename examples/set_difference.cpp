@@ -1,3 +1,8 @@
+#include <cstddef>
+#include <memory>
+#include <string_view>
+#include <utility>
+
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
@@ -7,10 +12,7 @@
 #include "sphere.hpp"
 #include "vector.hpp"
 
-#include <memory>
-#include <utility>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void set_difference_test() {
 	using namespace Imager;
 
@@ -49,4 +51,4 @@ void set_difference_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

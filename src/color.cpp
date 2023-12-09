@@ -1,10 +1,6 @@
 #include "color.hpp"
 
-#include <numeric>
-#include <spdlog/sinks/basic_file_sink.h>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 /* auto color_logger = spdlog::basic_logger_mt("color", "logs/color.txt"); */
 Color::Color(std::string_view color_name, double alpha) : alpha(alpha) {
 	assert(alpha >= 0 && alpha <= 1);
@@ -31,7 +27,7 @@ Color &Color::operator+=(const Color &other) {
 	return *this;
 }
 
-Color &Color::operator+=(double other) {
+Color &Color::operator+=(int other) {
 	red += other;
 	green += other;
 	blue += other;
@@ -52,17 +48,17 @@ Color &Color::operator*=(double factor) {
 	return *this;
 }
 
-Color &Color::operator/=(double other) {
+Color &Color::operator/=(size_t other) {
 	red /= other;
 	green /= other;
 	blue /= other;
 	return *this;
 }
 
-Color operator/(Color lhs, double rhs) { return lhs /= rhs; }
+Color operator/(Color lhs, size_t rhs) { return lhs /= rhs; }
 
 Color operator*(Color lhs, const Color &rhs) {
-	return lhs *= rhs / PIXEL_8BIT_MAX_COLOR;
+	return lhs *= rhs / MAX_COLOR_8BIT;
 }
 
 Color operator*(Color color, double factor) { return color *= factor; }
@@ -71,8 +67,7 @@ Color operator*(double factor, Color color) { return color *= factor; }
 
 Color operator+(Color lhs, const Color &rhs) { return lhs += rhs; }
 
-Color operator+(Color color, double factor) { return color += factor; }
+Color operator+(Color color, int factor) { return color += factor; }
 
-Color operator+(double factor, Color color) { return color += factor; }
-} // namespace Imager
-} // namespace raytracing
+Color operator+(int factor, Color color) { return color += factor; }
+} // namespace raytracing::Imager

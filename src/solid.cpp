@@ -6,10 +6,7 @@
 #include "solid_object.hpp"
 #include "vector.hpp"
 
-#include <optional>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 SolidObject::SolidObject(const Vector &center, bool is_fully_enclosed)
 	: center_(center), is_fully_enclosed_(is_fully_enclosed) {}
@@ -104,13 +101,12 @@ SolidObject::contains(const Vector &point) const {
 void SolidObject::set_matte_gloss_balance(double gloss_factor,
 										  const Color &raw_matte_color,
 										  const Color &raw_gloss_color) {
-	uniform_optics_.balance_matte_gloss(gloss_factor,
-										raw_matte_color,
-										raw_gloss_color);
+	uniform_optics_
+		= balance_matte_gloss(gloss_factor, raw_matte_color, raw_gloss_color);
 }
 
 void SolidObject::set_full_matte(const Color &matte_color) {
-	uniform_optics_.balance_matte_gloss(
+	uniform_optics_ = balance_matte_gloss(
 		0.0,      // glossFactor = 0 indicates full matte reflection
 		matte_color,
 		Color{}); // irrelevant, but must pass something
@@ -137,5 +133,4 @@ SolidObject_BinaryOperator::SolidObject_BinaryOperator(const Vector &center,
 SolidObject &SolidObject_BinaryOperator::left() const { return *left_; }
 
 SolidObject &SolidObject_BinaryOperator::right() const { return *right_; }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

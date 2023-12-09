@@ -1,12 +1,17 @@
 #include "spheroid.hpp"
 
+#include <cstddef>
+#include <memory>
+#include <utility>
+
 #include "color.hpp"
 #include "example.hpp"
+#include "light_source.hpp"
 #include "scene.hpp"
+#include "solid_object.hpp"
+#include "vector.hpp"
 
-#include <memory>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void spheroid_test() {
 	using namespace Imager;
 
@@ -35,4 +40,4 @@ void spheroid_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

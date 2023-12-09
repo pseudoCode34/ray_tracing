@@ -4,8 +4,7 @@
 #include "intersection.hpp"
 #include "solid_reorientable.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct Vector;
 
 // A sphere-like object, only with different dimensions allowed in the x, y, and
@@ -29,6 +28,6 @@ private:
 	const double Y_AXIS_RADIUS_SQR;
 	const double Z_AXIS_RADIUS_SQR;
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /* ifndef SPHEROID_HPP */

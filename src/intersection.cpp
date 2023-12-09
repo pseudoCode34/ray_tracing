@@ -26,38 +26,13 @@ IntersectionResult pick_closest_intersection(const IntersectionList &list) {
 		return {list.front(), IntersectionResultType::UNIQUE};
 
 	default:
-		// There are 2 or more intersections, so we need
-		// to find the closest one, and look for ties.
-		/* Intersection closest ; */
-		/* int tie_count        = 1; */
-		/* for (const Intersection &inter : list) */
-		/* 	if (double diff = inter.distance_squared - closest.distance_squared;
-		 */
-		/* 		fabs(diff) < EPSILON) */
-		/* 		// Within tolerance of the closest so far, so consider this a */
-		/* 		// tie. */
-		/* 		++tie_count; */
-		/* 	else if (diff < 0.0) { */
-		/* 		// This new intersection is definitely closer to the vantage */
-		/* 		// point. */
-		/* 		tie_count = 1; */
-		/* 		closest   = inter; */
-		/* 	} */
-
-		/* if (tie_count > 1) return {closest, AmbiguityStatus::AMBIGIOUS}; */
-		/* return {closest, AmbiguityStatus::ACCEPTABLE}; */
-
-		// The caller may need to know if there was an ambiguity,
-		// so report back the total number of closest intersections.
-		/* return tie_count; */
-
 
 		int tie_count                   = 1;
 		const auto CLOSEST_INTERSECTION = *ranges::min_element(
 			list,
 			[&tie_count](double lhs, double rhs) {
 				auto diff = lhs - rhs;
-				if (diff < EPSILON) {
+                if (diff < 0.0) {
 					tie_count = 1;
 					return true;
 				}

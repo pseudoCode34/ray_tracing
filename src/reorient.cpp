@@ -1,9 +1,6 @@
 #include "algebra.hpp"
 #include "solid_reorientable.hpp"
 
-#include <cmath>
-#include <ranges>
-
 namespace raytracing {
 namespace Imager {
 SolidObject_Reorientable::SolidObject_Reorientable(const Vector &center)

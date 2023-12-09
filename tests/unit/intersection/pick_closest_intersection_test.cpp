@@ -4,8 +4,7 @@
 
 #include <gtest/gtest.h>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 TEST_F(ClosestIntersectionTest, OnlyOneFound) {
 	// given
 	const IntersectionList LIST{{.distance_squared = 0.51839999999999986,
@@ -79,5 +78,4 @@ TEST_F(ClosestIntersectionTest, AcceptedResult) {
 	EXPECT_EQ(actual_closest, expected);
 }
 
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

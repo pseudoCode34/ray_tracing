@@ -1,12 +1,13 @@
 #ifndef __DDC_IMAGER_CHESSBOARD_H
 #define __DDC_IMAGER_CHESSBOARD_H
 
+#include <utility>
+
 #include "color.hpp"
 #include "optics.hpp"
 #include "polyhedra.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct Vector;
 
 class ChessBoard : public Cuboid {
@@ -35,7 +36,7 @@ private:
 	Color dark_square_color_;
 	Color border_color_;
 };
-} // namespace Imager
+} // namespace raytracing::Imager
 
-} // namespace raytracing
+
 #endif // __DDC_IMAGER_CHESSBOARD_H

@@ -7,18 +7,15 @@
 #include "vector.hpp"
 
 #include <array>
-#include <optional>
+#include <cstddef>
 #include <span>
-#include <stddef.h>
-#include <utility>
 #include <vector>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct TrianglePoints {
 	size_t a, b, c;
 
-	constexpr bool all_unique_points() const {
+	[[nodiscard]] constexpr bool all_unique_points() const {
 		return a != b && b != c && c != a;
 	}
 };
@@ -26,7 +23,7 @@ struct TrianglePoints {
 struct QuadrilateralPoints {
 	size_t a, b, c, d;
 
-	std::array<TrianglePoints, 2> split() const {
+	[[nodiscard]] std::array<TrianglePoints, 2> split() const {
 		// We preserve counterclockwise ordering by making two triangles:
 		// (a,b,c) and (c,d,a).
 		return std::to_array(
@@ -37,7 +34,7 @@ struct QuadrilateralPoints {
 struct PentagonPoints {
 	size_t a, b, c, d, e;
 
-	std::array<TrianglePoints, 3> split() const {
+	[[nodiscard]] std::array<TrianglePoints, 3> split() const {
 		return std::to_array({TrianglePoints{a, b, c},
 							  TrianglePoints{c, d, e},
 							  TrianglePoints{d, e, a}});
@@ -125,7 +122,10 @@ protected:
 	Vector get_point_from_index(int point_index) const;
 
 private:
-	struct Triangle;
+	struct Triangle {
+		TrianglePoints points{};
+		Optics optics; // surface color of the triangle
+	};
 
 	// Returns a unit vector at right angles to the triangle,
 	// using right-hand rule with respect to A,B,C ordering.
@@ -144,12 +144,5 @@ private:
 	TriangleList triangle_list_{};
 };
 
-struct TriangleMesh::Triangle {
-	TrianglePoints points;
-	Optics optics; // surface color of the triangle
-};
-
-
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
 #endif /* ifndef TRIANGLE_HPP */

@@ -3,10 +3,7 @@
 #include "polyhedra.hpp"
 #include "vector.hpp"
 
-#include <memory>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 // TODO: Move semantics here work with dynamic allocating?
 ConcreteBlock::ConcreteBlock(const Vector &center, const Optics &optics)
@@ -36,5 +33,4 @@ SolidObject *create_small_cuboid_union(const Optics &optics) {
 
 	return new SetUnion(Vector{}, top_cuboid, bottom_cuboid);
 }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

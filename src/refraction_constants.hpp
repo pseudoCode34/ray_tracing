@@ -3,8 +3,7 @@
 
 #include <cassert>
 
-namespace raytracing {
-namespace refraction {
+namespace raytracing::refraction {
 //  Refractive indexes of common substances/media...
 inline constexpr double VACUUM   = 1.0000;
 inline constexpr double AIR      = 1.0003;
@@ -24,6 +23,6 @@ inline constexpr void validate_refraction(double refraction) {
 		   && (refraction >= MIN || refraction <= MAX));
 }
 
-} // namespace refraction
-} // namespace raytracing
+} // namespace raytracing::refraction
+
 #endif /* ifndef CONSTANTS_HPP */

@@ -4,13 +4,12 @@
 #include "algebra.hpp"
 
 #include <cassert>
-#include <fmt/format.h>
+#include <cstdint>
+#include <iterator>
 #include <memory>
 #include <spdlog/logger.h>
-#include <stdint.h>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct ColorMapping {
 	std::string_view name;
 	std::array<int, 3> rgb;
@@ -46,9 +45,9 @@ struct Color {
 	Color &operator+=(const Color &other);
 	friend Color operator+(Color lhs, const Color &rhs);
 
-	Color &operator+=(double other);
-	friend Color operator+(Color color, double factor);
-	friend Color operator+(double factor, Color color);
+	Color &operator+=(int other);
+	friend Color operator+(Color color, int factor);
+	friend Color operator+(int factor, Color color);
 
 	Color &operator*=(const Color &other);
 	friend Color operator*(Color lhs, const Color &rhs);
@@ -57,8 +56,8 @@ struct Color {
 	friend Color operator*(Color color, double factor);
 	friend Color operator*(double factor, Color color);
 
-	Color &operator/=(double other);
-	friend Color operator/(Color lhs, double rhs);
+	Color &operator/=(size_t other);
+	friend Color operator/(Color lhs, size_t rhs);
 
 	/**
 	 * \brief Assert that Red, Green, Blue colorspace is within the range of
@@ -80,16 +79,14 @@ private:
 		{"black", {0, 0, 0}},
 		{"white", {255, 255, 255}},
 		{"red", {255, 0, 0}},
-		{"green", {0, 255, 0}},
+		{"green", {0, 128, 0}},
 		{"blue", {0, 0, 255}},
 		{"grey", {0, 0, 255}},
 	}};
 };
 
 extern std::shared_ptr<spdlog::logger> color_logger;
-} // namespace Imager
-
-} // namespace raytracing
+} // namespace raytracing::Imager
 
 template <>
 struct fmt::formatter<raytracing::Imager::Color> {
@@ -97,7 +94,7 @@ struct fmt::formatter<raytracing::Imager::Color> {
 		const auto *pos = ctx.begin();
 		while (pos != ctx.end() && *pos != '}') {
 			if (*pos == 'h' || *pos == 'H') is_hex = true;
-			++pos;
+			std::next(pos);
 		}
 		return pos; // expect `}` at this position, otherwise, it's error!
 	}
@@ -109,10 +106,14 @@ struct fmt::formatter<raytracing::Imager::Color> {
 			uint32_t val = static_cast<uint8_t>(red) << 16
 						   | static_cast<uint8_t>(green) << 8
 						   | static_cast<uint8_t>(blue);
-			return fmt::format_to(ctx.out(), "#{:x}", val);
+			return fmt::format_to(ctx.out(), "(Color) = #{:x}", val);
 		}
 
-		return fmt::format_to(ctx.out(), "({}, {}, {})", red, green, blue);
+		return fmt::format_to(ctx.out(),
+							  "(Color) = ({}, {}, {})",
+							  red,
+							  green,
+							  blue);
 	}
 
 	bool is_hex{false};

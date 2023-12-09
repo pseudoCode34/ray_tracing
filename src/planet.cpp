@@ -1,12 +1,8 @@
 #include "planet.hpp"
 
 #include "color.hpp"
-#include "imager.hpp"
 #include "thinring.hpp"
 #include "vector.hpp"
-
-#include <memory>
-#include <utility>
 
 namespace raytracing {
 namespace Imager {
@@ -42,7 +38,7 @@ Saturn::Saturn()
 
 	for (const auto [inner_radius_km, outer_radius_km, red, green, blue] :
 		 RING_DATA) {
-		Color color = Color(red, green, blue) / PIXEL_8BIT_MAX_COLOR;
+		Color color = Color(red, green, blue) / MAX_COLOR_8BIT;
 
 		auto *ring_solid = new ThinRing(inner_radius_km / MEAN_EARTH_RADIUS_KM,
 										outer_radius_km / MEAN_EARTH_RADIUS_KM);

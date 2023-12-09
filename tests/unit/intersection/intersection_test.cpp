@@ -1,6 +1,6 @@
 #include "intersection_test.hpp"
 
-namespace raytracing {
+namespace raytracing::Imager {
 TEST_F(IntersectionAttributeTest, DistanceSquaredIsNotDefaultInitialised) {
 	const double EXPECTED_INITIAL_VALUE = 1.0e+20;
 	EXPECT_NE(under_test.distance_squared, EXPECTED_INITIAL_VALUE);
@@ -26,4 +26,4 @@ TEST_F(IntersectionAttributeTest, TagIsDefaultInitialised) {
 	EXPECT_EQ(under_test.tag, EXPECTED_INITIAL_VALUE);
 }
 
-} // namespace raytracing
+} // namespace raytracing::Imager

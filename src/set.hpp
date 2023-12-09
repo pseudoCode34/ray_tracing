@@ -7,8 +7,7 @@
 
 #include <memory>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 
 class SetUnion : public SolidObject_BinaryOperator {
 public:
@@ -19,7 +18,8 @@ public:
 	append_all_intersections(const Vector &vantage,
 							 const Vector &direction) const override;
 
-	std::expected<bool, ContainmentError>  contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError>
+	contains(const Vector &point) const override;
 };
 
 // Filters a SolidObject, except toggles the inside/outside property.
@@ -28,7 +28,8 @@ class SetComplement : public SolidObject {
 public:
 	explicit SetComplement(SolidObject *other);
 
-	std::expected<bool, ContainmentError>  contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError>
+	contains(const Vector &point) const override;
 
 	IntersectionList
 	append_all_intersections(const Vector &vantage,
@@ -50,7 +51,8 @@ public:
 	IntersectionList
 	append_all_intersections(const Vector &vantage,
 							 const Vector &direction) const override;
-	 std::expected<bool, ContainmentError>  contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError>
+	contains(const Vector &point) const override;
 
 private:
 	IntersectionList append_overlapping_intersections(
@@ -71,7 +73,7 @@ public:
 						   SolidObject *right);
 };
 
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 
 #endif /* ifndef SET_HPP */

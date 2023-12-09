@@ -3,10 +3,10 @@
 #include "polyhedra.hpp"
 #include "vector.hpp"
 
-#include <math.h>
+#include <cmath>
+#include <limits>
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 Cuboid::Cuboid(double half_width, double half_length, double half_height)
 	: SolidObject_Reorientable(),
 	  HALF_WIDTH(half_width),
@@ -23,13 +23,13 @@ IntersectionList
 Cuboid::object_space_append_all_intersections(const Vector &vantage,
 											  const Vector &direction) const {
 	IntersectionList intersection_list;
-	double u = NAN;
+	double u = std::numeric_limits<double>::quiet_NaN();
 
 	// Check for intersections with left/right faces: x = +a or x = -a.
 	if (!Algebra::is_near_zero(direction.x)) {
 		// right face (x = +a)
 		u = (HALF_WIDTH - vantage.x) / direction.x;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location))
@@ -43,7 +43,7 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 
 		// left face (x = -a)
 		u = (-HALF_WIDTH - vantage.x) / direction.x;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location))
@@ -59,7 +59,7 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 	if (!Algebra::is_near_zero(direction.y)) {
 		// front face (y = +b)
 		u = (HALF_LENGTH - vantage.y) / direction.y;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location)) {
@@ -74,7 +74,7 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 
 		// back face (y = -b)
 		u = (-HALF_LENGTH - vantage.y) / direction.y;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location))
@@ -91,7 +91,7 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 	if (!Algebra::is_near_zero(direction.z)) {
 		// top face (z = +c)
 		u = (HALF_HEIGHT - vantage.z) / direction.z;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location))
@@ -104,7 +104,7 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 		}
 		// bottom face (z = -c)
 		u = (-HALF_HEIGHT - vantage.z) / direction.z;
-		if (u > EPSILON) {
+		if (Algebra::is_positve(u)) {
 			Vector displacement = u * direction;
 			Vector location     = vantage + displacement;
 			if (object_space_contains(location))
@@ -118,5 +118,4 @@ Cuboid::object_space_append_all_intersections(const Vector &vantage,
 	}
 	return intersection_list;
 }
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager

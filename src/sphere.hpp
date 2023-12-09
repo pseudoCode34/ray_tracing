@@ -1,11 +1,12 @@
 #ifndef SPHERE_HPP
 #define SPHERE_HPP
 
+#include <expected>
+
 #include "intersection.hpp"
 #include "solid_object.hpp"
 
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 struct Vector;
 
 // A sphere that is more efficient than Spheroid with equal dimensions.
@@ -26,7 +27,8 @@ public:
 	append_all_intersections(const Vector &vantage,
 							 const Vector &direction) const override;
 
-	std::expected<bool, ContainmentError> contains(const Vector &point) const override;
+	std::expected<bool, ContainmentError>
+	contains(const Vector &point) const override;
 
 	// The nice thing about a sphere is that rotating it has no effect on its
 	// appearance!
@@ -36,6 +38,6 @@ private:
 	double radius_;
 };
 
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif /* ifndef SOLID_OBJECT_HPP */

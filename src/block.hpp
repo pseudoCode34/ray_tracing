@@ -6,10 +6,7 @@
 #include "solid_object.hpp"
 #include "vector.hpp"
 
-#include <memory>
-
-namespace raytracing {
-namespace Imager {
+namespace raytracing::Imager {
 class Optics;
 class SolidObject;
 struct Vector;
@@ -23,12 +20,8 @@ SolidObject *create_small_cuboid_union(const Optics &optics);
 
 class ConcreteBlock : public SetDifference {
 public:
-	ConcreteBlock(const ConcreteBlock &)            = default;
-	ConcreteBlock(ConcreteBlock &&)                 = default;
-	ConcreteBlock &operator=(const ConcreteBlock &) = default;
-	ConcreteBlock &operator=(ConcreteBlock &&)      = default;
 	explicit ConcreteBlock(const Vector &center, const Optics &optics);
 };
-} // namespace Imager
-} // namespace raytracing
+} // namespace raytracing::Imager
+
 #endif // __DDC_BLOCK_H

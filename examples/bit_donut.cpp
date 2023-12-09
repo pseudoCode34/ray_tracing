@@ -1,3 +1,7 @@
+#include <cstddef>
+#include <memory>
+#include <string_view>
+
 #include "color.hpp"
 #include "example.hpp"
 #include "light_source.hpp"
@@ -8,13 +12,8 @@
 #include "torus.hpp"
 #include "vector.hpp"
 
-#include <memory>
-#include <stddef.h>
-
-namespace raytracing {
+namespace raytracing::Imager {
 void bit_donut_test() {
-	using namespace Imager;
-
 	Scene scene;
 
 	auto *torus     = new Torus(3.0, 1.0);
@@ -46,4 +45,4 @@ void bit_donut_test() {
 					 ZOOM_FACTOR,
 					 ANTI_ALIAS_FACTOR);
 }
-} // namespace raytracing
+} // namespace raytracing::Imager

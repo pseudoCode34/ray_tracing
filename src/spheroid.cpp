@@ -2,12 +2,10 @@
 
 #include "vector.hpp"
 
-#include <boost/math/tools/quartic_roots.hpp>
 #include <math.h>
 #include <range/v3/range/conversion.hpp>
 #include <range/v3/view/filter.hpp>
 #include <range/v3/view/transform.hpp>
-#include <vector>
 
 namespace raytracing {
 namespace Imager {
@@ -75,9 +73,7 @@ Vector get_surface_vector(double x_axis_radius_sqr, double y_axis_radius_sqr,
 IntersectionList
 Spheroid::object_space_append_all_intersections(const Vector &vantage,
 												const Vector &direction) const {
-	using boost::math::tools::quadratic_roots;
-
-	const auto [x0, x1] = quadratic_roots(
+	const auto roots = Algebra::solve_quadratic(
 		Y_AXIS_RADIUS_SQR * Z_AXIS_RADIUS_SQR * direction.x * direction.x
 			+ X_AXIS_RADIUS_SQR * Z_AXIS_RADIUS_SQR * direction.y * direction.y
 			+ X_AXIS_RADIUS_SQR * Y_AXIS_RADIUS_SQR * direction.z * direction.z,
@@ -104,10 +100,10 @@ Spheroid::object_space_append_all_intersections(const Vector &vantage,
                                                        location),
 				  .solid            = this};
 		  };
-	IntersectionList list;
-	if (x0 > EPSILON) list.push_back(make_intersection(x0));
-	if (x1 > EPSILON) list.push_back(make_intersection(x1));
-	return list;
+	return roots
+		   | ranges::views::filter([](double root) { return root > EPSILON; })
+		   | ranges::views::transform(make_intersection)
+		   | ranges::to<IntersectionList>();
 }
 } // namespace Imager
 } // namespace raytracing
