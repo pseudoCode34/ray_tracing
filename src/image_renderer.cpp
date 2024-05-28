@@ -27,10 +27,6 @@ void ImageRenderer::set_ambient_refraction(float index) {
 }
 
 Ray ImageRenderer::get_ray(const Viewport &viewport, size_t i, size_t j) const {
-	/* auto offset_x              = random_float(-0.5, 0.5); */
-	/* auto offset_y              = random_float(-0.5, 0.5); */
-	/* const Point3f pixel_sample = viewport.at(i + offset_x, j + offset_y);
-	 */
 	return standard_form_of(orig_, viewport.at(i, j), false);
 }
 

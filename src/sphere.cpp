@@ -21,13 +21,14 @@ bool Sphere::contains(Point3fConstRef point) const {
 float Sphere::hit(const Ray &ray) const {
 	using boost::math::tools::quadratic_roots;
 
-	const Vector3f displacement = displacement_to(ray.origin);
+	const auto &[orig, dir]     = ray;
+	const Vector3f displacement = displacement_to(orig);
 	const auto roots
-		= quadratic_roots(ray.direction.squaredNorm(),
-						  2 * ray.direction.dot(displacement),
+		= quadratic_roots(dir.squaredNorm(),
+						  2 * dir.dot(displacement),
 						  displacement.squaredNorm() - radius_ * radius_);
 
-	Eigen::Vector2f solutions{roots.first, roots.second};
+	const Eigen::Vector2f solutions{roots.first, roots.second};
 
 	return (solutions.array() > 1e-2)
 		.select(solutions, Eigen::NumTraits<float>::infinity())

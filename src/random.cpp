@@ -1,9 +1,6 @@
 #include "random.hpp"
 
-#include "floating_point_comparisons.hpp"
-
 #include <gsl/gsl-lite.hpp>
-#include <limits>
 #include <random>
 
 namespace raytracing {

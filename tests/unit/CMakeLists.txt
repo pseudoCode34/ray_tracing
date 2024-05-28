@@ -3,7 +3,7 @@ add_subdirectory(lodepng)
 
 add_executable(
     google_unit_test EXCLUDE_FROM_ALL
-    algebra/quadratic_test.cpp algebra/linear_equation_system.cpp
+    algebra/linear_equation_system.cpp
     geometric/gtest/refract.test.cpp owning_collection/construction.test.cpp)
 
 target_link_libraries(

@@ -45,7 +45,7 @@ public:
 	[[nodiscard]] constexpr std::optional<element_type *>
 	find_any_primary_container(const Point3f &point) const {
 		return find_any(
-			[&](const auto &solid) { return solid->contains(point); });
+			[&point](const auto &solid) { return solid->contains(point); });
 	}
 };
 } // namespace raytracing

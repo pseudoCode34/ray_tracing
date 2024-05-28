@@ -5,14 +5,10 @@
 
 namespace raytracing {
 struct Rect {
-	float width, height;
+	size_t width, height;
 
 	[[nodiscard]] constexpr float aspect_ratio() const {
-		return width / height;
-	}
-
-	[[nodiscard]] constexpr Rect scale_height(float height) const {
-		return {height * aspect_ratio(), height};
+		return static_cast<float>(width) / height;
 	}
 
 	[[nodiscard]] constexpr size_t area() const { return width * height; }

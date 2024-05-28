@@ -67,15 +67,13 @@ Viewport Camera::set_viewport(Rect image) const {
 	auto width  = image.aspect_ratio() * height;
 	auto z      = height / image.height;
 
-	Eigen::Matrix3f res;
 	Vector3f delta_u = view_matrix_.linear().col(0) * z;
 	Vector3f delta_v = view_matrix_.linear().col(1) * -z;
 	Vector3f pixel00_loc
 		= (delta_u + delta_v) / 2
 		  + view_matrix_.affine()
 				* Vector4f{-width / 2, height / 2, -far_dist_, 1};
-	res << delta_u, delta_v, pixel00_loc;
-	return res;
+	return Viewport{delta_u, delta_v, pixel00_loc};
 }
 
 void Camera::update_view_matrix() const {

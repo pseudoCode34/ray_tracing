@@ -7,10 +7,12 @@ using ScaledColor         = Vector3f;
 using ScaledColorConstRef = const Eigen::Ref<const ScaledColor>;
 using ScaledColorRef      = Eigen::Ref<ScaledColor>;
 
-// Convert a floating point color component value, based on the maximum
-// component value, to a byte RGB value in the range 0x00 to 0xff.
+/**
+ * \brief Convert a floating point color component value, based on the maximum
+ * component value, to a byte RGB value in the range 0x00 to 0xff.
+ */
 constexpr uint8_t convert_pixel_value(float color_component, float max) {
-	int pixel_value = static_cast<int>(255.f * color_component / max);
+	auto pixel_value = static_cast<int>(255.f * color_component / max);
 
 	return std::clamp(pixel_value, 0, UINT8_MAX);
 }
@@ -18,7 +20,9 @@ constexpr uint8_t convert_pixel_value(float color_component, float max) {
 
 template <>
 struct fmt::formatter<raytracing::ScaledColor> {
-	constexpr auto parse(fmt::format_parse_context &ctx) { return ctx.begin(); }
+	constexpr auto parse(const fmt::format_parse_context &ctx) {
+		return ctx.begin();
+	}
 
 	auto format(raytracing::ScaledColorConstRef vector,
 				fmt::format_context &ctx) {

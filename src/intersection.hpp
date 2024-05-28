@@ -25,7 +25,6 @@ struct Intersection {
 	auto operator==(const Intersection &other) const noexcept {
 		if (!position.isApprox(other.position, 1e-2f)) return false;
 		if (!normal.isApprox(other.normal, 1e-2f)) return false;
-		/* if (finish.get() != other.finish) return false; */
 		return true;
 	}
 

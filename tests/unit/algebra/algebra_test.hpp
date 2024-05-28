@@ -7,12 +7,12 @@
 
 template <std::floating_point T>
 struct fmt::formatter<std::complex<T>> {
-	constexpr auto parse(format_parse_context &ctx)
+	constexpr auto parse(const format_parse_context &ctx)
 		-> format_parse_context::iterator {
 		return ctx.begin();
 	}
 
-	auto format(const T &p, format_context &ctx) const
+	constexpr auto format(const T &p, format_context &ctx) const
 		-> format_context::iterator {
 		return fmt::format_to(ctx.out(), "({}, {})", p.real(), p.imag());
 	}
