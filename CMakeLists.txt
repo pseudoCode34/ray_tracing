@@ -41,6 +41,7 @@ FetchContent_MakeAvailable(lodepng)
 add_library(lodepng ${lodepng_SOURCE_DIR}/lodepng.cpp)
 include_directories(${lodepng_SOURCE_DIR})
 
+find_package(mp-units CONFIG REQUIRED)
 
 FetchContent_Declare(
     range-v3
