@@ -1,8 +1,8 @@
 #include "algebra.hpp"
 #include "algebra_test.hpp"
-#include "common_constants.hpp"
+#include "constants/common.hpp"
 
-#include <array>
+#include "gmock/gmock.h"
 #include <complex>
 #include <gtest/gtest.h>
 #include <utility>
@@ -10,48 +10,53 @@
 namespace raytracing::Algebra {
 TEST(QuadraticEquation, RealCoeffRealRoots) {
 	// given
-	const auto EXPECTED_ROOTS = std::to_array({1, 2});
+	const Eigen::Vector2f expected_roots{1, 2};
 
 	// when
-	const auto ACTUAL_ROOTS = solve_quadratic(1, -3, 2);
+	const auto actual_roots = minPostiveRootOf(1, -3, 2);
 
 	// then
-	ASSERT_THAT(ACTUAL_ROOTS,
-				NanSensitiveElementsNearArray(EXPECTED_ROOTS, EPSILON));
+	using FPC::NanSensitiveElementsNearArray;
+	ASSERT_THAT(actual_roots,
+				NanSensitiveElementsNearArray(expected_roots, EPSILON));
 }
 
-TEST(QuadraticEquation, RealCoeffComplexRoots) {
+TEST(QuadraticEquation, RealCoeffComplexRoots_Disabled) {
 	// given
 	using namespace std::complex_literals;
-	const auto EXPECTED_ROOTS
-		= std::make_pair(-1. - 1.41421356i, -1. + 1.41421356i);
+	const auto expected_roots
+		= std::make_pair(-1.f - 1.41421356if, -1.f + 1.41421356if);
 
 	// when
 	using boost::math::tools::quadratic_roots;
-	const auto ACTUAL_ROOTS = quadratic_roots(std::complex<double>(1),
-											  std::complex<double>(2),
-											  std::complex<double>(3));
+	const auto actual_roots = quadratic_roots(std::complex<float>(1),
+											  std::complex<float>(2),
+											  std::complex<float>(3));
 
 	// then
-	EXPECT_THAT(ACTUAL_ROOTS,
-				FieldsAre(ComplexNear(EXPECTED_ROOTS.first, EPSILON),
-						  ComplexNear(EXPECTED_ROOTS.second, EPSILON)));
+	using FPC::ComplexNear;
+	using testing::FieldsAre;
+	EXPECT_THAT(actual_roots,
+				FieldsAre(ComplexNear(expected_roots.first, EPSILON),
+						  ComplexNear(expected_roots.second, EPSILON)));
 }
 
-TEST(QuadraticEquation, ComplexCoeffAndRoots) {
+TEST(QuadraticEquation, ComplexCoeffAndRoots_Disabled) {
 	// given
 	using namespace std::complex_literals;
-	const auto EXPECTED_ROOTS
-		= std::make_pair(1.45216805 + 2.06735566i, -0.25216805 - 0.46735566i);
+	const auto expected_roots = std::make_pair(1.45216805f + 2.06735566if,
+											   -0.25216805f - 0.46735566if);
 
 	// when
-	const auto ACTUAL_ROOTS
-		= boost::math::tools::quadratic_roots(1. + 2.i, 2. - 4.i, 3. + 0.i);
+	using boost::math::tools::quadratic_roots;
+	const auto actual_roots = quadratic_roots(1.f + 2.if, 2.f - 4.if, 3.f);
 
 	// then
-	EXPECT_THAT(ACTUAL_ROOTS,
-				FieldsAre(ComplexNear(EXPECTED_ROOTS.first, EPSILON),
-						  ComplexNear(EXPECTED_ROOTS.second, EPSILON)));
+	using FPC::ComplexNear;
+	using testing::FieldsAre;
+	EXPECT_THAT(actual_roots,
+				FieldsAre(ComplexNear(expected_roots.first, EPSILON),
+						  ComplexNear(expected_roots.second, EPSILON)));
 }
 
 } // namespace raytracing::Algebra

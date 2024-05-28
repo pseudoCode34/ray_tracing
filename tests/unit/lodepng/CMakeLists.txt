@@ -11,13 +11,11 @@ target_compile_options(
             -pedantic>
             -O1
             -fsanitize=undefined
-			-Werror=sign-conversion)
+            -Werror=sign-conversion)
 
 target_link_options(lodepng_test PRIVATE -fsanitize=undefined)
 target_link_libraries(
-    lodepng_test
-    PRIVATE lodepng
-            GTest::gtest
-            GTest::gtest_main
-            pthread # pthread is needed on Unix-like systems
-            fmt::fmt-header-only)
+    lodepng_test PRIVATE lodepng GTest::gtest GTest::gtest_main
+                         pthread # pthread is needed on Unix-like systems
+						 spdlog::spdlog
+)
