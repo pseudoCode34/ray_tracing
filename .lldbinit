@@ -1,1 +1,1 @@
-command script import debug/eigenlldb.py
+command script import debug/lldb/eigen.py
