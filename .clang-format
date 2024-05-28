@@ -27,7 +27,7 @@ AlwaysBreakAfterReturnType: None
 AlwaysBreakBeforeMultilineStrings: false
 AlwaysBreakTemplateDeclarations: Yes
 AttributeMacros:
-  ['__capability', '__output', '__ununsed']
+  ['__capability', '__output', '__unused']
 BinPackArguments: false
 BinPackParameters: true
 BitFieldColonSpacing: Both
@@ -121,7 +121,7 @@ IntegerLiteralSeparator:
   HexMinDigits: 6
 KeepEmptyLinesAtTheStartOfBlocks: false
 LambdaBodyIndentation: Signature
-# This affects doctring /* */ formatting
+# This affects docstring /* */ formatting
 LineEnding: DeriveCRLF
 MacroBlockBegin: ''
 MacroBlockEnd:   ''

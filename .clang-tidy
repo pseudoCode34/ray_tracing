@@ -36,8 +36,10 @@ Checks: >
   readability-uniqueptr-delete-release,
 
 CheckOptions:
-  # - key:   readability-identifier-naming.ClassCase
-  #   value: CamelCase
+  - key:   readability-identifier-naming.ClassCase
+    value: CamelCase
+  - key:   readability-identifier-naming.GlobalConstantCase
+    value: UPPER_CASE
   - key:   readability-identifier-naming.EnumConstantCase
     value: UPPER_CASE
   - key:   readability-identifier-naming.EnumCase
@@ -50,9 +52,7 @@ CheckOptions:
     value: lower_case
   - key:   readability-identifier-naming.UnionCase
     value: CamelCase
-  - key:   readability-identifier-naming.ConstantCase
-    value: UPPER_CASE
-  - key:   readability-identifier-naming.VariableCase
+  - key:   readability-identifier-naming.LocalVariableCase
     value: lower_case
   - key:   readability-identifier-naming.PrivateMemberCase
     value: lower_case

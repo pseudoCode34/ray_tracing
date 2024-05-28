@@ -1,0 +1,6 @@
+build/
+QtDebug/
+.DS_Store
+.idea/
+.cache/
+.ipynb_checkpoints/

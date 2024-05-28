@@ -36,11 +36,10 @@
 *.dSYM
 
 # Build folders
-Debug
+build*
+*Debug
 Release
-AppleClangBuild
-XcodeBuild
-QtDebug
+
 # CMake cache
 .cache
 compile_commands.json
@@ -50,7 +49,7 @@ iwyu.out
 build-iwyu
 iwyu
 
-# logs
+# logs folder
 logs
 
 # Docs generated from Doxygen
@@ -67,3 +66,13 @@ bin
 
 # CTest temporaries
 Testing
+
+# CMake-Conan preset config
+CMakeUserPresets.json
+conan_provider.cmake
+
+# CLion cache
+.idea
+
+# Jupyter
+.ipynb_checkpoints/
