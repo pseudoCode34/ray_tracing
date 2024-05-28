@@ -1,43 +1,46 @@
 #ifndef SPHERE_HPP
 #define SPHERE_HPP
 
-#include <expected>
-
-#include "intersection.hpp"
+#include "point3f.hpp"
 #include "solid_object.hpp"
 
-namespace raytracing::Imager {
-struct Vector;
+namespace raytracing {
+class Material;
+struct Ray;
 
-// A sphere that is more efficient than Spheroid with equal dimensions.
+// A solid_object that is more efficient than Spheroid with equal dimensions.
 class Sphere : public SolidObject {
 public:
-	Sphere();
-	Sphere(Vector &&center, double radius);
-	Sphere(const Vector &center, double radius);
+	Sphere(Point3fConstRef center, const Material &uniform_optics = {},
+		   float radius = 1);
 
-	/*
-	 * \brief Determine the number of intersection where a particular direction
-	 * from a given vantage point passes through the front of the Sphere at one
-	 * point and emerges from the back of the Sphere at another point. In this
-	 * case, it inserts two extra Intersection structs at the back of
-	 * intersectionList.
+	/**
+	 * \copybrief SolidObject::hit()
+	 * \brief Returns the closest intersection of this solid_object with the
+	 * specified ray if possible.
+	 *
+	 * \param ray
+	 *
+	 * Solve the quadratic equation to find all possible intersection points. If
+	 * found any roots, select one with the smallest positive parametric ray
+	 * root.
 	 */
-	IntersectionList
-	append_all_intersections(const Vector &vantage,
-							 const Vector &direction) const override;
+	[[nodiscard]] float hit(const Ray &ray) const override;
 
-	std::expected<bool, ContainmentError>
-	contains(const Vector &point) const override;
+	/**
+	 * \brief Returns true if the square of the squared distance from the center
+	 * to \param point is within the square of the radius.
+	 */
+	[[nodiscard]] bool contains(Point3fConstRef point) const override;
 
-	// The nice thing about a sphere is that rotating it has no effect on its
-	// appearance!
-	SolidObject &rotate(double angle_in_degrees, char axis) override;
+	[[nodiscard]] Vector3f normal_at(Point3fConstRef point) const override;
+
+	[[nodiscard]] Point3f center() const;
 
 private:
-	double radius_;
+	float radius_;
 };
 
-} // namespace raytracing::Imager
+} // namespace raytracing
 
-#endif /* ifndef SOLID_OBJECT_HPP */
+#endif /* ifndef SPHERE_HPP */

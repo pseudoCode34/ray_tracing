@@ -1,44 +1,34 @@
 add_library(
     Imager
-    algebra.cpp
-    binary.cpp
-    block.cpp
-    chessboard.cpp
-    color.cpp
-    cuboid.cpp
-    cylinder.cpp
-    dodecahedron.cpp
-    icosahedron.cpp
-    imager.cpp
-    imager_buffer.cpp
-    intersection.cpp
-    optics.cpp
-    planet.cpp
-    reorient.cpp
-    scene.cpp
-    setcompl.cpp
-    setdiff.cpp
-    setisect.cpp
-    setunion.cpp
-    solid.cpp
+    camera.cpp
+	geometric.cpp
+    image_renderer.cpp
+    material.cpp
+    ray.cpp
     sphere.cpp
-    spheroid.cpp
-    thinring.cpp
-    torus.cpp
-    triangle.cpp
-    vector.cpp)
+    vector3f.cpp
+	random.cpp
+    viewport.cpp)
+target_include_directories(Imager PUBLIC ${PROJECT_SOURCE_DIR}/include)
+
+add_library(
+    owning_collection INTERFACE owning_container.hpp
+    owning_container/concepts/stl_container_concept.hpp
+    owning_container/concepts/smart_pointer_concept.hpp)
 
 # if(CMAKE_BUILD_TYPE MATCHES "Debug") target_compile_options( Imager BEFORE
 # PRIVATE -O1 -fsanitize=undefined PRIVATE -fsanitize=leak) endif()
 
-if(Boost_FOUND)
+if(Boost_math_c99_FOUND)
+    target_link_libraries(Imager PUBLIC Boost::math_c99)
+elseif()
 	target_include_directories(Imager PUBLIC ${Boost_INCLUDE_DIRS})
 	target_link_libraries(Imager PUBLIC Boost::boost)
-elseif()
-	target_link_libraries(Imager PUBLIC Boost::math)
 endif()
 
-target_compile_options(Imager PUBLIC -Wall -Wextra -pedantic)
-target_link_libraries(Imager PUBLIC lodepng fmt::fmt-header-only
-                                    range-v3::range-v3 Eigen3::Eigen)
-# target_compile_definitions(Imager PRIVATE RAYTRACE_DEBUG_POINTS=1)
+target_compile_options(Imager PRIVATE -Wall -Wextra -Wpedantic)
+target_link_libraries(
+    Imager PUBLIC lodepng spdlog::spdlog range-v3::range-v3 Eigen3::Eigen
+                  owning_collection mp-units::mp-units)
+
+#target_compile_definitions(Imager PUBLIC gsl_CONFIG_CONTRACT_VIOLATION_THROWS)
