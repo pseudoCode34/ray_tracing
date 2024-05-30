@@ -1,5 +1,6 @@
 #include "image_renderer.hpp"
 
+#include "color.hpp"
 #include "geometric.hpp"
 #include "viewport.hpp"
 
@@ -31,7 +32,7 @@ Ray ImageRenderer::get_ray(const Viewport &viewport, size_t i, size_t j) const {
 }
 
 void ImageRenderer::save_image(fmt::cstring_view filename, const Viewport &vp,
-							   Rect dimension) {
+							   Rect dimension, float screen_gamma) {
 	spdlog::stopwatch sw;
 	auto out = fmt::output_file(filename);
 	out.print("P3\n{} {}\n255\n", dimension.width, dimension.height);
@@ -39,9 +40,8 @@ void ImageRenderer::save_image(fmt::cstring_view filename, const Viewport &vp,
 	// i=872 412
 	for (size_t j = 0; j < dimension.height; ++j) {
 		for (size_t i = 0; i < dimension.width; ++i) {
-			const Ray r         = get_ray(vp, i, j);
-			const ScaledColor x = trace_ray(r).cwiseMin(1).cwiseMax(0) * 255;
-			print(out, x.cast<uint8_t>());
+			const Ray r = get_ray(vp, i, j);
+			print(out, trace_ray(r), screen_gamma);
 		}
 	}
 	spdlog::info("Writing to {} elapsed {} seconds", filename.c_str(), sw);
@@ -108,17 +108,16 @@ ScaledColor ImageRenderer::trace_ray(const Ray &ray,
 }
 
 void ImageRenderer::export_png(const std::string &filename, const Viewport &vp,
-							   Rect dimension) const {
+							   Rect dimension, float screen_gamma) const {
 	spdlog::stopwatch sw;
 	// I prefer std::array here, but lodepng API requires std::vector
 	std::vector<uint8_t> rgba_buffer(dimension.area());
 
 	for (size_t j = 0; j < dimension.height; ++j)
 		for (size_t i = 0; i < dimension.width; ++i) {
-			Ray r         = get_ray(vp, i, j);
-			ScaledColor x = trace_ray(r).cwiseMin(1).cwiseMax(0) * 255;
-			for (auto component : x.cast<uint8_t>())
-				rgba_buffer.push_back(component);
+			const Ray r      = get_ray(vp, i, j);
+			const auto final = to_rgb(trace_ray(r), screen_gamma);
+			for (auto component : final) rgba_buffer.push_back(component);
 		}
 	const auto error = lodepng::encode(filename,
 									   rgba_buffer,

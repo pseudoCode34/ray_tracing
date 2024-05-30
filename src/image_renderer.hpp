@@ -2,11 +2,11 @@
 #define IMAGE_RENDERER_HPP
 
 // IWYU pragma: no_include "vector3f.hpp"
-#include "camera.hpp"
 #include "constants/indexes_of_refraction.hpp"
 #include "intersection.hpp"
 #include "light_source.hpp"
 #include "ray.hpp"
+#include "rect.hpp"
 #include "solid_object_list.hpp"
 #include "vector3f.hpp"
 #include "viewport.hpp"
@@ -44,18 +44,18 @@ public:
 	 * transformed to RGB 255 format.
 	 *
 	 * \param dimension The resolution of the output image.
-	 * \param filename A relative directory to write the image.
+	 * \param filename A relative directory to write the image in ppm format.
+	 * \param screen_gamma Defaults to 1 incidcates no gamma correction
 	 */
 	void save_image(fmt::cstring_view filename, const Viewport &vp,
-					Rect dimension);
+					Rect dimension, float screen_gamma = 1.f);
 
 	/**
 	 * \brief Downsample the image buffer to an unsigned char array of RGBA
 	 * values that LodePNG understands.
 	 */
 	void export_png(const std::string &filename, const Viewport &vp,
-					Rect dimension) const;
-
+					Rect dimension, float screen_gamma = 1.f) const;
 
 	/**
 	 * \brief Get a randomly-sampled camera ray for the pixel at location i,j,

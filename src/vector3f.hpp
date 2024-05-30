@@ -3,7 +3,6 @@
 
 // IWYU pragma: private, include "point3f.h"
 #include <Eigen/Core> // IWYU pragma: keep
-#include <fmt/os.h>
 
 namespace raytracing {
 using Vector3f         = Eigen::Vector3f;
@@ -22,11 +21,6 @@ using Vector3fRef      = Eigen::Ref<Eigen::Vector3f>;
  * zero (the \a light parallel to the \normal), return std::nullopt
  */
 float is_facing_forward(Vector3fConstRef normal, Vector3fConstRef incident);
-
-template <typename Derived>
-void print(fmt::ostream &out, const Eigen::MatrixBase<Derived> &a) {
-	out.print("{} {} {}\n", a.x(), a.y(), a.z());
-}
 
 } // namespace raytracing
 

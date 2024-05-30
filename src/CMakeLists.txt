@@ -1,5 +1,6 @@
 add_library(
     Imager
+	color.cpp
     camera.cpp
 	geometric.cpp
     image_renderer.cpp
