@@ -5,13 +5,11 @@
 #include "point3f.hpp"
 
 namespace raytracing {
-// For now, all light sources are single points with an inherent color.
-// Luminosity of the light source can be changed by multiplying color.red,
-// color.green, color.blue all by a constant value.
 struct LightSource {
 	EIGEN_MAKE_ALIGNED_OPERATOR_NEW
-	Point3f position  = Point3f::Zero();
-	ScaledColor color = ScaledColor::Ones();
+	Point3f position;
+	ScaledColor diffuse;  // Diffuse intensity of the light
+	ScaledColor specular; // Specular intensity of the light
 };
 
 using LightSourceList = std::vector<LightSource>;

@@ -4,12 +4,17 @@
 #include "geometric.hpp"
 #include "viewport.hpp"
 
+#include <cstdint>
 #include <gsl/gsl-lite.hpp>
 
 namespace raytracing {
-ImageRenderer::ImageRenderer(Vector3fConstRef orig, float ambient_ior,
+ImageRenderer::ImageRenderer(Vector3fConstRef orig,
+							 ScaledColorConstRef background, float ambient_ior,
 							 uint8_t bounce_limit)
-	: ambient_ior_(ambient_ior), orig_(orig), bounce_limit_(bounce_limit) {
+	: ambient_ior_(ambient_ior),
+	  orig_(orig),
+	  background_(background),
+	  bounce_limit_(bounce_limit) {
 	gsl_Expects(ior::MIN <= ambient_ior && ambient_ior <= ior::MAX);
 	gsl_Expects(bounce_limit < 20);
 }
@@ -34,12 +39,12 @@ Ray ImageRenderer::get_ray(const Viewport &viewport, size_t i, size_t j) const {
 void ImageRenderer::save_image(fmt::cstring_view filename, const Viewport &vp,
 							   Rect dimension, float screen_gamma) {
 	spdlog::stopwatch sw;
-	auto out = fmt::output_file(filename);
-	out.print("P3\n{} {}\n255\n", dimension.width, dimension.height);
+	const auto &[width, height] = dimension;
+	auto out                    = fmt::output_file(filename);
+	out.print("P3\n{} {}\n255\n", width, height);
 
-	// i=872 412
-	for (size_t j = 0; j < dimension.height; ++j) {
-		for (size_t i = 0; i < dimension.width; ++i) {
+	for (size_t j = 0; j < height; ++j) {
+		for (size_t i = 0; i < width; ++i) {
 			const Ray r = get_ray(vp, i, j);
 			print(out, trace_ray(r), screen_gamma);
 		}
@@ -48,24 +53,45 @@ void ImageRenderer::save_image(fmt::cstring_view filename, const Viewport &vp,
 }
 
 ScaledColor
-ImageRenderer::local_illumination(const Intersection &intersection) const {
-	ScaledColor sum = intersection.material->attenuation();
+ImageRenderer::local_illumination(Vector3fConstRef view,
+								  const Intersection &intersection) const {
+	using std::fmax, std::pow;
 
-	for (const auto &light : light_source_list_)
-		if (Ray r = standard_form_of(intersection.position, light.position);
-			hit_any_obstacle(r)) {
-			// TODO: Where is diffuse coeff?
-			sum += intersection.normal.dot(r.direction) * light.color;
-		}
-	return sum;
+	const auto &[_, normal, material] = intersection;
+	gsl_Expects(view.isUnitary());
+	/* TODO: Write a test case in case of normal negated due to exiting
+	 * refraction <03-06-24, Nguyễn Khắc Trường> */
+	// gsl_Expects(view.dot(normal) > 0);
+
+	ScaledColor total = material->ambient();
+	for (const auto &light : light_source_list_) {
+		// shift a little bit to exclude this object when casting shadow ray
+		const auto shadow_ray
+			= standard_form_of(intersection.shift(1e-3), light.position);
+		if (hit_any_obstacle(shadow_ray)) continue;
+
+		Vector3f halfway_dir = (view + shadow_ray.direction).normalized();
+		float lambertian     = fmax(normal.dot(shadow_ray.direction), 0.0f);
+		float spec
+			= pow(fmax(normal.dot(halfway_dir), 0.0f), material->shininess());
+		ScaledColor diffuse
+			= light.diffuse.cwiseProduct(material->diffuse()) * lambertian;
+		ScaledColor specular
+			= light.specular.cwiseProduct(material->specular()) * spec;
+
+		total += diffuse + specular;
+	}
+	return total;
 }
 
-bool ImageRenderer::hit_any_obstacle(const Ray &r) const {
-	return world_.none_match([&r](const auto &obstacle) {
-		const auto closest = obstacle->hit(r);
-
-		if (!std::isinf(closest)) return false;
-		return closest > r.direction.squaredNorm();
+bool ImageRenderer::hit_any_obstacle(const Ray &shadow_ray) const {
+	return world_.any_match([&shadow_ray](const auto &obstacle) {
+		auto root = obstacle->hit(shadow_ray);
+		if (std::isinf(root)) return false;
+		/* TODO: Can this comparison be reduced to `t<1` even
+		 * shadow_ray.direction.isUnitary() is false? <03-06-24, Nguyễn Khắc
+		 * Trường> */
+		return root < shadow_ray.direction.squaredNorm();
 	});
 }
 
@@ -80,9 +106,9 @@ ScaledColor ImageRenderer::trace_ray(const Ray &ray,
 	if (exceeds_bounce_limit(bounce_count)) return ScaledColor::Zero();
 
 	auto intersection = world_.find_closest_intersection(ray);
-	if (!intersection.has_value()) return ScaledColor::Ones();
-	const Vector3f incidence = ray.direction.normalized();
+	if (!intersection.has_value()) return background_;
 
+	const Vector3f incidence = ray.direction.normalized();
 	float eta = ambient_ior_ / intersection->material->get_refractive_index();
 
 	// Ray hits the object's inner face
@@ -93,11 +119,13 @@ ScaledColor ImageRenderer::trace_ray(const Ray &ray,
 
 	auto reflection_coeff = reflectance(incidence, intersection->normal, eta);
 
-	const ScaledColor local = local_illumination(*intersection);
+	// Negating for incidence pointing outward
+	const ScaledColor local = local_illumination(-incidence, *intersection);
 	// FIXME: When negate normal, this lower down intersection inside sphere
-	const ScaledColor reflected = trace_ray(
-		Ray{intersection->position, reflect(incidence, intersection->normal)},
-		bounce_count + 1);
+	const ScaledColor reflected
+		= trace_ray(Ray{intersection->shift(1e-3),
+						reflect(incidence, intersection->normal)},
+					bounce_count + 1);
 	const ScaledColor refracted
 		= trace_ray(Ray{intersection->position,
 						refract(incidence, intersection->normal, eta)},
@@ -129,4 +157,5 @@ void ImageRenderer::export_png(const std::string &filename, const Viewport &vp,
 	spdlog::info("Writing to {} elapsed {} seconds", filename, sw);
 }
 
+const SolidObjectList &ImageRenderer::object_list() const { return world_; }
 } // namespace raytracing

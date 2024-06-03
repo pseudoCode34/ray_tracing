@@ -1,7 +1,9 @@
+
 #ifndef IMAGE_RENDERER_HPP
 #define IMAGE_RENDERER_HPP
 
 // IWYU pragma: no_include "vector3f.hpp"
+#include "color.hpp"
 #include "constants/indexes_of_refraction.hpp"
 #include "intersection.hpp"
 #include "light_source.hpp"
@@ -24,8 +26,9 @@ namespace raytracing {
 class ImageRenderer {
 public:
 	explicit ImageRenderer(Vector3fConstRef orig,
-						   float ambient_ior    = ior::VACUUM,
-						   uint8_t bounce_limit = 5);
+						   ScaledColorConstRef background = ScaledColor::Ones(),
+						   float ambient_ior              = ior::VACUUM,
+						   uint8_t bounce_limit           = 5);
 
 	void add(std::unique_ptr<SolidObject> &&solid);
 
@@ -44,8 +47,7 @@ public:
 	 * transformed to RGB 255 format.
 	 *
 	 * \param dimension The resolution of the output image.
-	 * \param filename A relative directory to write the image in ppm format.
-	 * \param screen_gamma Defaults to 1 incidcates no gamma correction
+	 * \param filename A relative directory to write the image.
 	 */
 	void save_image(fmt::cstring_view filename, const Viewport &vp,
 					Rect dimension, float screen_gamma = 1.f);
@@ -68,41 +70,37 @@ public:
 							  size_t j) const;
 
 	/**
-	 * \brief Computes the local illumination color at a surface point based on
-	 * ambient, diffuse, and specular reflection components using the Phong
-	 * reflection model.
+	 * \brief Computes the color at a surface point based on ambient, diffuse,
+	 * and specular reflection components using the Blinn-Phong reflection
+	 * model.
 	 *
-	 * Iterate through all light sources in the scene, looking for unblocked
-	 * lines of sight to this intersection
+	 * Iterate through all light sources in the scene, find one that makes the
+	 * object not appear in the dark area.
 	 *
-	 * \param ka Ambient reflection coefficient.
-	 * \param Ia Ambient light intensity.
-	 * \param kd Diffuse reflection coefficient.
-	 * \param L Light direction vector.
-	 * \param N Surface normal vector.
-	 * \param Il Diffuse light intensity.
-	 * \param ks Specular reflection coefficient.
-	 * \param R Reflected light direction vector.
-	 * \param V Viewer direction vector.
-	 * \param n Shininess coefficient.
-	 *
+	 * \param view Viewer direction vector.
+	 * \param intersection Specify frag's position, normal, and component colour
 	 * \return The computed local illumination color.
-	 * FIXME: blinn-phong
+	 *
+	 * \warning The prerequisite of all vectors passed to Blinn-phong model is
+	 * view, normal, shadow ray, and halfway dir must all pointing outward.
 	 */
 	[[nodiscard]] ScaledColor
-	local_illumination(const Intersection &intersection) const;
+	local_illumination(Vector3fConstRef view,
+					   const Intersection &intersection) const;
 
 	/**
-	 * \brief Returns true if the ray \a can hit no obstacle, False otherwise
+	 * \brief Returns true if the \a shadow_ray hit something before reaching
+	 * the light, false otherwise
 	 *
 	 * The closest intersection found is a blocker if it is closer to
 	 * intersection point than the light source. Clearly, when the closest
 	 * intersection is farther away than point2, conclude that there is no
 	 * blocker
 	 */
-	[[nodiscard]] bool hit_any_obstacle(const Ray &r) const;
+	[[nodiscard]] bool hit_any_obstacle(const Ray &shadow_ray) const;
 
 	/**
+	 * TODO: Add docs for this function
 	 */
 	[[nodiscard]] float target_refractive_index(Vector3fConstRef point) const;
 
@@ -119,6 +117,9 @@ public:
 	[[nodiscard]]
 	ScaledColor trace_ray(const Ray &ray, uint8_t bounce_count = 0) const;
 
+	[[nodiscard("getter")]]
+	const SolidObjectList &object_list() const;
+
 private:
 	/**
 	 * \return if the number of light bounces has exceeded the maximum limit.
@@ -126,7 +127,8 @@ private:
 	 * \param bounce_count The depth of the recursion calls of light bouncing
 	 * off so far before being assumed to diminish to nothing.
 	 */
-	constexpr bool exceeds_bounce_limit(uint8_t bounce_count) const {
+	[[nodiscard]] constexpr bool
+	exceeds_bounce_limit(uint8_t bounce_count) const {
 		return bounce_count >= bounce_limit_;
 	}
 
@@ -142,6 +144,7 @@ private:
 	 */
 	float ambient_ior_;
 	Vector3f orig_;
+	ScaledColor background_;
 	// A limit to how deeply lights may go before it fades away.
 	uint8_t bounce_limit_;
 };
