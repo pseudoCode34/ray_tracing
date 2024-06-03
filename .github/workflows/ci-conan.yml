@@ -1,0 +1,114 @@
+# The MIT License (MIT)
+#
+# Copyright (c) 2018 Mateusz Pusz
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+name: Conan CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: "C++${{ matrix.std }} ${{ matrix.config.name }} ${{ matrix.build_type }}"
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        std: [ 20, 23 ]
+        config:
+          - {
+            name: "Clang 17",
+            os: macos-13,
+            compiler:
+              {
+                type: Clang,
+                version: 17,
+                cc: "/opt/homebrew/opt/llvm@17/bin/clang",
+                cxx: "/opt/homebrew/opt/llvm@17/bin/clang++",
+              },
+          }
+
+        build_type: [ "RelWithDebInfo", "Debug" ]
+
+    env:
+      CC: ${{ matrix.config.compiler.cc }}
+      CXX: ${{ matrix.config.compiler.cxx }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - name: Cache Conan data
+        uses: actions/cache@v4
+        if: always()
+        env:
+          cache-name: cache-conan-data
+        with:
+          path: ~/.conan2/p
+          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}-${{ env.cache_id }}
+          restore-keys: |
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
+
+      - uses: hendrikmuhs/ccache-action@v1.2
+        if: runner.os == 'Linux'
+        with:
+          key: ${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
+          max-size: 50M
+      - name: Select Xcode version
+        if: runner.os == "mac"
+        shell: bash
+        run: |
+          sudo xcode-select -s /Applications/Xcode_${{ matrix.config.compiler.version }}.app && /usr/bin/xcodebuild -version
+      - name: Install brew
+        if: runner.os == "mac"
+        shell: bash
+        run: |
+          /bin/bash -c \
+          "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+      - name: Install Clang
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == "mac"
+        shell: bash
+        run: |
+          brew install "llvm@${{matrix.config.compiler.version}}"
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+      - name: Install Conan
+        shell: bash
+        run: |
+          pip3 install -U conan
+      - name: Configure Conan
+        shell: bash
+        run: |
+          conan install . \
+          --profile=conan-${{matrix.config.compiler.os}}-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
+          --build=missing
+      - name: Build
+        shell: bash
+        run: |
+          cmake --build --preset \
+          conan-${{matrix.config.compiler.os}}-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
+          -b=missing
