@@ -12,11 +12,10 @@ jobs:
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
-        std: [ 20, 23 ]
+        cppstd: [ 20, 23 ]
         config:
           - {
-            name: "Clang 17",
-            os: macOS-13,
+            os: macOS-14,
             compiler:
               {
                 type: Clang,
@@ -41,13 +40,12 @@ jobs:
         env:
           cache-name: cache-conan-data
         with:
-          path: ~/.conan2/p
-          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}-${{ env.cache_id }}
+          path: ~/.conan2/profiles
+          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}-${{ env.cache_id }}
           restore-keys: |
-            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
-            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
-            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}
-            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
       - name: Install brew
         if: runner.os == 'macOS'
@@ -73,15 +71,31 @@ jobs:
       - name: Configure Conan
         shell: bash
         run: |
-          conan install . \
-          --profile=conan-${{matrix.config.compiler.os}}-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
-          --build=missing
+          conan profile detect
+          echo tools.cmake.cmake_layout:build_folder_vars= \
+          ["settings.compiler", \
+          "settings.compiler.version", \
+          "settings.compiler.cppstd"] >> ~/.conan2/global.conf
+      - name: Generate a Conan profile
+        shell: bash
+        run: |
+          cp ~/.conan2/profiles/default ~/.conan2/profiles/${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
+          conan profile detect --force
+          if [[ "${{ matrix.config.compiler.type }}" == "CLANG" ]]; then
+            sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.libcxx=.*/compiler.libcxx=${{ matrix.config.lib }}/' ~/.conan2/profiles/default
+          fi
+          sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.cppstd=.*/compiler.cppstd=${{ matrix.std }}/' ~/.conan2/profiles/default
+          sed -i.backup '/^\[settings\]$/,/^\[/ s/^build_type=.*/build_type=${{ matrix.build_type }}/' ~/.conan2/profiles/default
+          conan profile show -pr default
+
   build:
     runs-on: ${{ matrix.config.os }}
     steps:
       - name: Compile
+      - if: runner.os == 'macOS'
         shell: bash
         run: |
+          PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))
           cmake --build --preset \
-          conan-${{matrix.config.compiler.os}}-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
-          -b=missing
+          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
+          -j$PARALLEL_JOBS
