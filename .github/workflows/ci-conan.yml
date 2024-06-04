@@ -106,7 +106,7 @@ jobs:
           --parallel=${{env.PARALLEL_JOBS}} \
           --target=catch2_${{matrix.test_type}}_test
 
-      - name: Integration tests
+      - name: Integration Catch2 tests
         if: matrix.test_type == 'integration'
         run: |
           cmake --build --preset=conan-default \
