@@ -90,7 +90,7 @@ jobs:
         shell: bash
         run: |
           conan install . -b=missing
-          cmake --preset conan-default
+          cmake --preset conan-${{matrix.build_type}}
 
       - name: Build
         run: |
