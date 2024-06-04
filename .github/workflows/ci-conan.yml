@@ -81,18 +81,18 @@ jobs:
 
       - name: Get number of CPU cores on the system
         run: |
-          if [[ "$RUNNER_OS" == "Linux" ]]; then
+          if [[ ${{env.RUNNER_OS}} == "Linux" ]]; then
             echo "threads=$(nproc)" >> $GITHUB_ENV
-          elif [[ "$RUNNER_OS" == "macOS" ]]; then
+          elif [[ ${{env.RUNNER_OS}} == "macOS" ]]; then
             echo "threads=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           fi
-          echo $threads
+
+      - run: echo "BUILD_TYPE=$(echo '${{matrix.build_type}}' | tr '[:upper:]' '[:lower:]')"  >> $GITHUB_ENV
 
       - name: Configure
         shell: bash
         run: |
           conan install . -b=missing
-          echo "BUILD_TYPE=$(echo '${{matrix.build_type}}' | tr '[:upper:]' '[:lower:]')"  >> $GITHUB_ENV
           cmake --preset conan-${{env.BUILD_TYPE}}
 
       - name: Build
