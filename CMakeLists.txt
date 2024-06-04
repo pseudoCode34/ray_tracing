@@ -30,7 +30,13 @@ if(NOT Boost_math_c99_FOUND)
 	FetchContent_MakeAvailable(boost_math_tools)
 endif()
 
-find_package(Eigen3 3.3 NO_MODULE)
+FetchContent_Declare(
+	Eigen3
+	GIT_REPOSITORY https://gitlab.com/libeigen/eigen.git
+	GIT_TAG 3.4.0
+	FIND_PACKAGE_ARGS)
+
+FetchContent_MakeAvailable(Eigen3)
 
 FetchContent_Declare(
     lodepng
@@ -71,7 +77,7 @@ FetchContent_Declare(
     FIND_PACKAGE_ARGS NAMES catch2)
 FetchContent_MakeAvailable(Catch2)
 
-list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/llvm/lib/c++")
+list(APPEND CMAKE_PREFIX_PATH "/opt/homebrew/opt/llvm/")
 
 set(CMAKE_FIND_USE_SYSTEM_ENVIRONMENT_PATH TRUE)
 
