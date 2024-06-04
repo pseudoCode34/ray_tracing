@@ -8,7 +8,7 @@ on:
 
 jobs:
   setup-enviroment:
-    name: "C++${{ matrix.std }} ${{ matrix.config.name }} ${{ matrix.build_type }}"
+    name: "C++${{ matrix.cppstd }} ${{ matrix.config.name }} ${{ matrix.build_type }}"
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -41,9 +41,9 @@ jobs:
           cache-name: cache-conan-data
         with:
           path: ~/.conan2/profiles
-          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}-${{ env.cache_id }}
+          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.cppstd }}-${{ env.cache_id }}
           restore-keys: |
-            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.cppstd }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
@@ -80,12 +80,12 @@ jobs:
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
         run: |
-          cp ~/.conan2/profiles/default ~/.conan2/profiles/${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
+          cp ~/.conan2/profiles/default ~/.conan2/profiles/${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}}
           conan profile detect --force
           if [[ "${{ matrix.config.compiler.type }}" == "CLANG" ]]; then
             sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.libcxx=.*/compiler.libcxx=${{ matrix.config.lib }}/' ~/.conan2/profiles/default
           fi
-          sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.cppstd=.*/compiler.cppstd=${{ matrix.std }}/' ~/.conan2/profiles/default
+          sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.cppstd=.*/compiler.cppstd=${{ matrix.cppstd }}/' ~/.conan2/profiles/default
           sed -i.backup '/^\[settings\]$/,/^\[/ s/^build_type=.*/build_type=${{ matrix.build_type }}/' ~/.conan2/profiles/default
           conan profile show -pr default
 
@@ -98,7 +98,7 @@ jobs:
         run: |
           PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))
           cmake --build --preset \
-          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
+          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}} \
           -j$PARALLEL_JOBS
 
       - name: Compile on Linux
@@ -106,5 +106,5 @@ jobs:
         run: |
           PARALLEL_JOBS=$(($(nproc) - 1))
           cmake --build --preset \
-          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
+          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}} \
           -j$PARALLEL_JOBS
