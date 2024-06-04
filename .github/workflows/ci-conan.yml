@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  setup-enviroment:
+  build:
     name: "${{ matrix.config.os }}, C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}} ${{ matrix.build_type }}"
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -86,6 +86,7 @@ jobs:
           elif [[ runner.os == 'macOS' ]]; then
             echo "threads=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           fi
+          echo $threads
 
       - name: Configure
         shell: bash
