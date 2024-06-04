@@ -8,7 +8,7 @@ on:
 
 jobs:
   setup-enviroment:
-    name: "C++${{ matrix.cppstd }} ${{ matrix.config.name }} ${{ matrix.build_type }}"
+    name: "C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}} ${{ matrix.build_type }}"
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -76,11 +76,11 @@ jobs:
           ["settings.compiler", \
           "settings.compiler.version", \
           "settings.compiler.cppstd"] >> ~/.conan2/global.conf
+
       - name: Generate a Conan profile
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
         run: |
-          cp ~/.conan2/profiles/default ~/.conan2/profiles/${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}}
           conan profile detect --force
           if [[ "${{ matrix.config.compiler.type }}" == "CLANG" ]]; then
             sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.libcxx=.*/compiler.libcxx=${{ matrix.config.lib }}/' ~/.conan2/profiles/default
@@ -89,22 +89,29 @@ jobs:
           sed -i.backup '/^\[settings\]$/,/^\[/ s/^build_type=.*/build_type=${{ matrix.build_type }}/' ~/.conan2/profiles/default
           conan profile show -pr default
 
-  build:
-    runs-on: ${{ matrix.config.os }}
-    steps:
-      - name: Compile on macOS
-        if: runner.os == 'macOS'
-        shell: bash
+      - name: Get number of CPU cores on the system
         run: |
-          PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))
-          cmake --build --preset \
-          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}} \
-          -j$PARALLEL_JOBS
+          if [[ runner.os == 'Linux' ]]; then
+            echo "PARALLEL_JOBS=$(($(nproc) - 1))" >> $GITHUB_ENV
+          elif [[ runner.os == 'macOS' ]]; then
+            echo "PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
+          fi
 
-      - name: Compile on Linux
-        if: runner.os == 'Linux'
+  build:
+    runs-on: [macOS, Linux],
+
+    strategy:
+      matrix:
+        framework: [catch2, gtest]
+        test_type: [unit, integration]
+    steps:
+      - name: Compile
         run: |
-          PARALLEL_JOBS=$(($(nproc) - 1))
-          cmake --build --preset \
-          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.cppstd}}-${{matrix.build_type}} \
-          -j$PARALLEL_JOBS
+          cmake --build --preset=conan-default \
+          --parallel $PARALLEL_JOBS
+
+      - name: Test on macOS
+        if: runner.os == 'macOS'
+        run: cmake --build --preset=conan-default \
+          --parallel=$PARALLEL_JOBS \
+          --target=${{matrix.framework}}_${{matrix.test_type}}_test
