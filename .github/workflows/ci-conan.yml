@@ -77,21 +77,23 @@ jobs:
           key: ${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.config.lib }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.std }}
           max-size: 50M
       - name: Select Xcode version
-        if: runner.os == "macOS"
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           sudo xcode-select -s /Applications/Xcode_${{ matrix.config.compiler.version }}.app && /usr/bin/xcodebuild -version
       - name: Install brew
-        if: runner.os == "macOS"
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           /bin/bash -c \
           "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> /Users/$USER/.zprofile   
+         eval $(/opt/homebrew/bin/brew shellenv)
       - name: Install Clang
-        if: matrix.config.compiler.type == 'CLANG' && runner.os == "mac"
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'mac'
         shell: bash
         run: |
-          brew install "llvm@${{matrix.config.compiler.version}}"
+          brew install llvm@${{matrix.config.compiler.version}}'
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
