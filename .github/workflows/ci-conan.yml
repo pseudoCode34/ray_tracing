@@ -24,7 +24,6 @@ jobs:
                 cxx: "/opt/homebrew/opt/llvm@17/bin/clang++",
               },
           }
-        framework: [catch2, gtest]
         test_type: [unit, integration]
         build_type: [ "RelWithDebInfo", "Debug" ]
 
@@ -66,13 +65,13 @@ jobs:
         with:
           python-version: 3.x
       - name: Install Conan
+        if: runner.os != 'macOS'
         shell: bash
         run: |
           pip3 install -U conan
-      - name: Configure Conan
+      - name: Separate build folders for each configurations
         shell: bash
         run: |
-          conan profile detect 
           echo tools.cmake.cmake_layout:build_folder_vars= \
           ["settings.compiler", \
           "settings.compiler.version", \
@@ -103,16 +102,16 @@ jobs:
           cmake --build --preset=conan-default \
           --parallel ${PARALLEL_JOBS}
 
-      - name: Unit tests
+      - name: Unit Catch2 tests
         if: matrix.test_type == 'unit'
         run: |
           cmake --build --preset=conan-default \
           --parallel=$PARALLEL_JOBS \
-          --target=${{matrix.framework}}_${{matrix.test_type}}_test
+          --target=catch2_${{matrix.test_type}}_test
 
       - name: Integration tests
         if: matrix.test_type == 'integration'
         run: |
           cmake --build --preset=conan-default \
           --parallel=$PARALLEL_JOBS \
-          --target=${{matrix.framework}}_${{matrix.test_type}}_test
+          --target=catch2_${{matrix.test_type}}_test
