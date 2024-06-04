@@ -24,7 +24,8 @@ jobs:
                 cxx: "/opt/homebrew/opt/llvm@17/bin/clang++",
               },
           }
-
+        framework: [catch2, gtest]
+        test_type: [unit, integration]
         build_type: [ "RelWithDebInfo", "Debug" ]
 
     env:
@@ -71,7 +72,7 @@ jobs:
       - name: Configure Conan
         shell: bash
         run: |
-          conan profile detect
+          conan profile detect 
           echo tools.cmake.cmake_layout:build_folder_vars= \
           ["settings.compiler", \
           "settings.compiler.version", \
@@ -97,21 +98,20 @@ jobs:
             echo "PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
           fi
 
-  build:
-    name: "${{matrix.os}} C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}}"
-    runs-on: ${{matrix.os}}
-    strategy:
-      matrix:
-        framework: [catch2, gtest]
-        test_type: [unit, integration]
-        os: [macOS, Linux]
-    steps:
       - name: Build
         run: |
           cmake --build --preset=conan-default \
           --parallel ${PARALLEL_JOBS}
 
-      - name: Test
+      - name: Unit tests
+        if: matrix.test_type == 'unit'
+        run: |
+          cmake --build --preset=conan-default \
+          --parallel=$PARALLEL_JOBS \
+          --target=${{matrix.framework}}_${{matrix.test_type}}_test
+
+      - name: Integration tests
+        if: matrix.test_type == 'integration'
         run: |
           cmake --build --preset=conan-default \
           --parallel=$PARALLEL_JOBS \
