@@ -47,7 +47,7 @@ jobs:
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
-      - name: Install brew
+      - name: Install the package manager
         if: runner.os == 'macOS'
         shell: bash
         run: |
@@ -60,15 +60,22 @@ jobs:
         shell: bash
         run: |
           brew install llvm@${{matrix.config.compiler.version}}
-      - name: Set up Python
+
+      - name: Install Conan via Homebrew
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install -U conan
+
+      - name: Install Conan via pip3
         uses: actions/setup-python@v5
         with:
           python-version: 3.x
-      - name: Install Conan
         if: runner.os != 'macOS'
         shell: bash
         run: |
           pip3 install -U conan
+
       - name: Separate build folders for each configurations
         shell: bash
         run: |
