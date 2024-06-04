@@ -80,8 +80,7 @@ jobs:
           conan profile show -pr default
 
       - name: Get number of CPU cores on the system
-        shell: bash
-        run:
+        run: |
           if [[ runner.os == 'Linux' ]]; then
             echo "threads=$(nproc)" >> $GITHUB_ENV
           elif [[ runner.os == 'macOS' ]]; then
