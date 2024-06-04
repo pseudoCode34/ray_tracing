@@ -77,6 +77,7 @@ jobs:
           "settings.compiler.version", \
           "settings.compiler.cppstd"] >> ~/.conan2/global.conf
       - name: Generate a Conan profile
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
         run: |
           cp ~/.conan2/profiles/default ~/.conan2/profiles/${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
@@ -91,11 +92,19 @@ jobs:
   build:
     runs-on: ${{ matrix.config.os }}
     steps:
-      - name: Compile
-      - if: runner.os == 'macOS'
+      - name: Compile on macOS
+        if: runner.os == 'macOS'
         shell: bash
         run: |
           PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))
+          cmake --build --preset \
+          conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
+          -j$PARALLEL_JOBS
+
+      - name: Compile on Linux
+        if: runner.os == 'Linux'
+        run: |
+          PARALLEL_JOBS=$(($(nproc) - 1))
           cmake --build --preset \
           conan-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}} \
           -j$PARALLEL_JOBS
