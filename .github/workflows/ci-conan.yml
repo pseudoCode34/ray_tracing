@@ -81,9 +81,9 @@ jobs:
 
       - name: Get number of CPU cores on the system
         run: |
-          if [[ ${{env.RUNNER_OS}} == "Linux" ]]; then
+          if [[ "RUNNER_OS" == "Linux" ]]; then
             echo "threads=$(nproc)" >> $GITHUB_ENV
-          elif [[ ${{env.RUNNER_OS}} == "macOS" ]]; then
+          elif [[ "RUNNER_OS" == "macOS" ]]; then
             echo "threads=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
           fi
 
