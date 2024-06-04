@@ -24,7 +24,7 @@ jobs:
                 cxx: "/opt/homebrew/opt/llvm@17/bin/clang++",
               },
           }
-        test_type: [unit, integration]
+        test_type: [ unit, integration ]
         build_type: [ "RelWithDebInfo", "Debug" ]
 
     env:
@@ -86,27 +86,29 @@ jobs:
           elif [[ runner.os == 'macOS' ]]; then
             echo "PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
           fi
+
       - name: Configure
         shell: bash
         run: |
           conan install . -b=missing
-          cmake --preset conan-${{matrix.build_type}}
+          echo "BUILD_TYPE=$(echo '${{matrix.build_type}}' | awk '{print tolower($0)}')"  >> $GITHUB_ENV
+          cmake --preset conan-${{env.BUILD_TYPE}}
 
       - name: Build
         run: |
-          cmake --build --preset=conan-default \
-          --parallel ${PARALLEL_JOBS}
+          cmake --build --preset=${{env.BUILD_TYPE}} \
+          --parallel ${{env.PARALLEL_JOBS}}
 
       - name: Unit Catch2 tests
         if: matrix.test_type == 'unit'
         run: |
           cmake --build --preset=conan-default \
-          --parallel=$PARALLEL_JOBS \
+          --parallel=${{env.PARALLEL_JOBS}} \
           --target=catch2_${{matrix.test_type}}_test
 
       - name: Integration tests
         if: matrix.test_type == 'integration'
         run: |
           cmake --build --preset=conan-default \
-          --parallel=$PARALLEL_JOBS \
+          --parallel=${{env.PARALLEL_JOBS}} \
           --target=catch2_${{matrix.test_type}}_test
