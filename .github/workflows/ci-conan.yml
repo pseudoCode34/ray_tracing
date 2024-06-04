@@ -67,14 +67,6 @@ jobs:
         run: |
           brew install conan
 
-      - name: Separate build folders for each configurations
-        shell: bash
-        run: |
-          echo tools.cmake.cmake_layout:build_folder_vars= \
-          ["settings.compiler", \
-          "settings.compiler.version", \
-          "settings.compiler.cppstd"] >> ~/.conan2/global.conf
-
       - name: Generate a Conan profile
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
