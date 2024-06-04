@@ -94,6 +94,11 @@ jobs:
           elif [[ runner.os == 'macOS' ]]; then
             echo "PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
           fi
+      - name: Configure
+        shell: bash
+        run: |
+          conan install . -b=missing
+          cmake --preset conan-default
 
       - name: Build
         run: |
