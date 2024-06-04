@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  setup-enviroment:
     name: "C++${{ matrix.std }} ${{ matrix.config.name }} ${{ matrix.build_type }}"
     runs-on: ${{ matrix.config.os }}
     strategy:
@@ -34,6 +34,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - run: echo "cache_id=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_ENV
       - name: Cache Conan data
         uses: actions/cache@v4
         if: always()
@@ -55,9 +56,9 @@ jobs:
           /bin/bash -c \
           "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
           echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> /Users/$USER/.zprofile   
-         eval $(/opt/homebrew/bin/brew shellenv)
+          eval $(/opt/homebrew/bin/brew shellenv)
       - name: Install Clang
-        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'mac'
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
         run: |
           brew install llvm@${{matrix.config.compiler.version}}'
@@ -75,7 +76,10 @@ jobs:
           conan install . \
           --profile=conan-${{matrix.config.compiler.os}}-${{matrix.config.compiler.type}}-${{matrix.config.compiler.version}}-${{matrix.std}}-${{matrix.build_type}}
           --build=missing
-      - name: Build
+  build:
+    runs-on: ${{ matrix.config.os }}
+    steps:
+      - name: Compile
         shell: bash
         run: |
           cmake --build --preset \
