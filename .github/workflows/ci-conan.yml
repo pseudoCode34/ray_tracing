@@ -67,15 +67,6 @@ jobs:
         run: |
           brew install -U conan
 
-      - name: Install Conan via pip3
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-        if: runner.os != 'macOS'
-        shell: bash
-        run: |
-          pip3 install -U conan
-
       - name: Separate build folders for each configurations
         shell: bash
         run: |
