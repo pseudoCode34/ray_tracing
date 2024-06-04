@@ -8,7 +8,7 @@ on:
 
 jobs:
   setup-enviroment:
-    name: "C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}} ${{ matrix.build_type }}"
+    name: "${{ matrix.config.os }}, C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}} ${{ matrix.build_type }}"
     runs-on: ${{ matrix.config.os }}
     strategy:
       matrix:
@@ -98,20 +98,21 @@ jobs:
           fi
 
   build:
-    runs-on: [macOS, Linux],
-
+    name: "${{matrix.os}} C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}}"
+    runs-on: ${{matrix.os}}
     strategy:
       matrix:
         framework: [catch2, gtest]
         test_type: [unit, integration]
+        os: [macOS, Linux]
     steps:
-      - name: Compile
+      - name: Build
         run: |
           cmake --build --preset=conan-default \
-          --parallel $PARALLEL_JOBS
+          --parallel ${PARALLEL_JOBS}
 
-      - name: Test on macOS
-        if: runner.os == 'macOS'
-        run: cmake --build --preset=conan-default \
+      - name: Test
+        run: |
+          cmake --build --preset=conan-default \
           --parallel=$PARALLEL_JOBS \
           --target=${{matrix.framework}}_${{matrix.test_type}}_test
