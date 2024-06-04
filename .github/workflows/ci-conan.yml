@@ -82,9 +82,9 @@ jobs:
       - name: Get number of CPU cores on the system
         run: |
           if [[ runner.os == 'Linux' ]]; then
-            echo "PARALLEL_JOBS=$(($(nproc) - 1))" >> $GITHUB_ENV
+            echo "threads=$(($(nproc) - 1))" >> $GITHUB_ENV
           elif [[ runner.os == 'macOS' ]]; then
-            echo "PARALLEL_JOBS=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
+            echo "threads=$(($(sysctl -n hw.ncpu) + 1))" >> $GITHUB_ENV
           fi
 
       - name: Configure
@@ -97,18 +97,18 @@ jobs:
       - name: Build
         run: |
           cmake --build --preset=${{env.BUILD_TYPE}} \
-          --parallel ${{env.PARALLEL_JOBS}}
+          --parallel ${{env.threads}}
 
       - name: Unit Catch2 tests
         if: matrix.test_type == 'unit'
         run: |
           cmake --build --preset=conan-default \
-          --parallel=${{env.PARALLEL_JOBS}} \
+          --parallel=${{env.threads}} \
           --target=catch2_${{matrix.test_type}}_test
 
       - name: Integration Catch2 tests
         if: matrix.test_type == 'integration'
         run: |
           cmake --build --preset=conan-default \
-          --parallel=${{env.PARALLEL_JOBS}} \
+          --parallel=${{env.threads}} \
           --target=catch2_${{matrix.test_type}}_test
