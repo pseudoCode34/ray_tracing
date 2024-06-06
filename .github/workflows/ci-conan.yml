@@ -106,4 +106,3 @@ jobs:
           cmake --build --preset=conan-${{env.BUILD_TYPE}} \
           --parallel=${{env.threads}} \
           --target=catch2_unit_test
-
