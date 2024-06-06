@@ -47,14 +47,17 @@ jobs:
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
-      - name: Install the package manager
-        if: runner.os == 'macOS'
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install Conan
         shell: bash
         run: |
-          /bin/bash -c \
-          "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
-          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> /Users/$USER/.zprofile   
-          eval $(/opt/homebrew/bin/brew shellenv)
+          pip3 install -U conan
+
       - name: Install Clang
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
