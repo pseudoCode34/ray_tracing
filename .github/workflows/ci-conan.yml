@@ -97,19 +97,13 @@ jobs:
 
       - name: Build
         run: |
-          cmake --build --preset=${{env.BUILD_TYPE}} \
+          cmake --build --preset=conan-${{env.BUILD_TYPE}} \
           --parallel ${{env.threads}}
 
-      - name: Unit Catch2 tests
+      - name: Catch2 tests
         if: matrix.test_type == 'unit'
         run: |
-          cmake --build --preset=conan-default \
+          cmake --build --preset=conan-${{env.BUILD_TYPE}} \
           --parallel=${{env.threads}} \
-          --target=catch2_${{matrix.test_type}}_test
+          --target=catch2_unit_test
 
-      - name: Integration Catch2 tests
-        if: matrix.test_type == 'integration'
-        run: |
-          cmake --build --preset=conan-default \
-          --parallel=${{env.threads}} \
-          --target=catch2_${{matrix.test_type}}_test
