@@ -2,7 +2,6 @@
 mp-units/2.1.0
 lodepng/cci.20230410
 eigen/3.4.0
-fmt/10.1.0
 spdlog/1.12.0
 catch2/3.4.0
 gtest/1.14.0
