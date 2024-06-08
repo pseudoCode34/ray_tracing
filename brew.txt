@@ -1,0 +1,7 @@
+eigen
+fmt
+spdlog
+range-v3
+googletest
+catch2
+boost
