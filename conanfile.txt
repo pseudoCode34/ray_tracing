@@ -1,5 +1,6 @@
 [requires]
 mp-units/2.1.0
+lodepng/cci.20230410
 
 [layout]
 cmake_layout
