@@ -31,7 +31,7 @@ endif()
 
 target_compile_options(Imager PRIVATE -Wall -Wextra -Wpedantic)
 target_link_libraries(
-    Imager PUBLIC lodepng spdlog::spdlog range-v3::range-v3 Eigen3::Eigen
+    Imager PUBLIC lodepng::lodepng spdlog::spdlog Eigen3::Eigen
                   owning_collection mp-units::mp-units)
 target_link_options(Imager PUBLIC "-L/opt/homebrew/opt/llvm/lib/c++")
 
