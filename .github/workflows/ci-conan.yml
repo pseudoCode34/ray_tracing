@@ -47,28 +47,42 @@ jobs:
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
             conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
-
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: 3.x
-
-      - name: Install Conan
+      - name: Install system package manager
+        if: runner.os == 'macOS'
         shell: bash
         run: |
-          pip3 install -U conan
-
+          /bin/bash -c \
+          "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> /Users/$USER/.zprofile   
+          eval $(/opt/homebrew/bin/brew shellenv)
       - name: Install Clang
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
         shell: bash
         run: |
           brew install llvm@${{matrix.config.compiler.version}}
 
+      - name: Install dependencies via Brew
+        if:  runner.os == 'macOS'
+        shell: bash
+        run: |
+          xargs brew install < brew.txt
+
       - name: Install Conan via Homebrew
         if: runner.os == 'macOS'
         shell: bash
         run: |
           brew install conan
+      - name: Set up Python
+        if: runner.os != 'macOS'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install Conan via pip3
+        if: runner.os != 'macOS'
+        shell: bash
+        run: |
+          pip3 install -U conan
 
       - name: Generate a Conan profile
         if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
@@ -109,3 +123,4 @@ jobs:
           cmake --build --preset=conan-${{env.BUILD_TYPE}} \
           --parallel=${{env.threads}} \
           --target=catch2_unit_test
+
