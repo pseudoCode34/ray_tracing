@@ -1,11 +1,14 @@
 #include "image_renderer.hpp"
 
 #include "color.hpp"
+#include "constants/indexes_of_refraction.hpp"
 #include "geometric.hpp"
+#include "utility.hpp"
 #include "viewport.hpp"
 
 #include <cstdint>
 #include <gsl/gsl-lite.hpp>
+#include <lodepng.h>
 
 namespace raytracing {
 ImageRenderer::ImageRenderer(Vector3fConstRef orig,
@@ -15,7 +18,7 @@ ImageRenderer::ImageRenderer(Vector3fConstRef orig,
 	  orig_(orig),
 	  background_(background),
 	  bounce_limit_(bounce_limit) {
-	gsl_Expects(ior::MIN <= ambient_ior && ambient_ior <= ior::MAX);
+	gsl_Expects(is_in_range(ambient_ior, ior::MIN, ior::MAX));
 	gsl_Expects(bounce_limit < 20);
 }
 
@@ -28,7 +31,7 @@ void ImageRenderer::set_light_sources(LightSourceList &&light_source_list) {
 }
 
 void ImageRenderer::set_ambient_refraction(float index) {
-	gsl_Expects(ior::MIN <= index && index <= ior::MAX);
+	gsl_Expects(is_in_range(index, ior::MIN, ior::MAX));
 	ambient_ior_ = index;
 }
 
@@ -55,7 +58,7 @@ void ImageRenderer::save_image(fmt::cstring_view filename, const Viewport &vp,
 ScaledColor
 ImageRenderer::local_illumination(Vector3fConstRef view,
 								  const Intersection &intersection) const {
-	using std::fmax, std::pow;
+	using std::pow;
 
 	const auto &[_, normal, material] = intersection;
 	gsl_Expects(view.isUnitary());
@@ -71,9 +74,9 @@ ImageRenderer::local_illumination(Vector3fConstRef view,
 		if (hit_any_obstacle(shadow_ray)) continue;
 
 		Vector3f halfway_dir = (view + shadow_ray.direction).normalized();
-		float lambertian     = fmax(normal.dot(shadow_ray.direction), 0.0f);
+		float lambertian     = saturate(normal.dot(shadow_ray.direction));
 		float spec
-			= pow(fmax(normal.dot(halfway_dir), 0.0f), material->shininess());
+			= pow(saturate(normal.dot(halfway_dir)), material->shininess());
 		ScaledColor diffuse
 			= light.diffuse.cwiseProduct(material->diffuse()) * lambertian;
 		ScaledColor specular

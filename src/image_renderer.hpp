@@ -13,7 +13,6 @@
 #include "vector3f.hpp"
 #include "viewport.hpp"
 
-#include <lodepng.h>
 #include <memory>
 #include <spdlog/spdlog.h>
 #include <spdlog/stopwatch.h>

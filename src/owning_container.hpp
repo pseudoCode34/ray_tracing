@@ -42,9 +42,9 @@ public:
 			   | std::ranges::transform(std::forward<decltype(op)>(op));
 	}
 
-	constexpr bool none_match(std::predicate<pointer> auto &&pred) const {
-		return std::ranges::none_of(container_,
-									std::forward<decltype(pred)>(pred));
+	constexpr bool any_match(std::predicate<pointer> auto &&pred) const {
+		return std::ranges::any_of(container_,
+								   std::forward<decltype(pred)>(pred));
 	}
 
 	constexpr std::optional<element_type *>

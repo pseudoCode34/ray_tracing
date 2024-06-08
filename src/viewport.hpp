@@ -3,6 +3,8 @@
 
 #include "point3f.hpp"
 
+#include <cstddef>
+
 namespace raytracing {
 class Viewport {
 public:
@@ -18,7 +20,7 @@ public:
 					  Point3fConstRef pixel00_loc);
 	// NOLINTEND(modernize-pass-by-value)
 
-	[[nodiscard]] Point3f at(float i, float j) const;
+	[[nodiscard]] Point3f at(size_t i, size_t j) const;
 
 private:
 	Eigen::Matrix3f mat_;

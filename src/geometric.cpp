@@ -1,6 +1,7 @@
 #include "geometric.hpp"
 
 #include "floating_point_comparisons.hpp"
+#include "utility.hpp"
 
 #include <gsl/gsl-lite.hpp>
 
@@ -15,13 +16,13 @@ float reflectance(Vector3fConstRef incident, Vector3fConstRef normal,
 	float r0 = (1 - eta) / (1 + eta);
 	float reflection_coeff
 		= std::lerp(std::pow(1.f - cos_incidence, 5.f), 1.f, r0 * r0);
-	gsl_Ensures(0 <= reflection_coeff && reflection_coeff <= 1);
+	gsl_Ensures(is_in_range(reflection_coeff));
 
 	return reflection_coeff;
 }
 
 ScaledColor lerp(float t, const ScaledColor &low, const ScaledColor &high) {
-	gsl_Expects(t <= 1 && t >= 0);
+	gsl_Expects(is_in_range(t));
 	return low * (1 - t) + high * t;
 }
 

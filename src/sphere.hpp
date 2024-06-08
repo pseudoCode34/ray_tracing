@@ -11,7 +11,7 @@ struct Ray;
 // A solid_object that is more efficient than Spheroid with equal dimensions.
 class Sphere : public SolidObject {
 public:
-	Sphere(Point3fConstRef center, const Material &uniform_optics = {},
+	Sphere(Point3fConstRef center, const Material &uniform_optics,
 		   float radius = 1);
 
 	/**
@@ -34,8 +34,6 @@ public:
 	[[nodiscard]] bool contains(Point3fConstRef point) const override;
 
 	[[nodiscard]] Vector3f normal_at(Point3fConstRef point) const override;
-
-	[[nodiscard]] Point3f center() const;
 
 private:
 	float radius_;

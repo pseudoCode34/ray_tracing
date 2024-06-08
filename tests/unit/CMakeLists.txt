@@ -1,10 +1,15 @@
-add_subdirectory(lodepng)
-# add_subdirectory(rotation)
-
 add_executable(
     google_unit_test EXCLUDE_FROM_ALL
-    algebra/linear_equation_system.cpp
-    geometric/gtest/refract.test.cpp owning_collection/construction.test.cpp)
+    algebra/linear_equation_system.cpp geometric/gtest/refract.test.cpp
+    owning_collection/construction.test.cpp lodepng/encode.cpp)
+
+target_compile_options(
+    google_unit_test
+    PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
+            $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic
+            -Werror=sign-conversion)
+
+target_link_options(google_unit_test PRIVATE -fsanitize=undefined)
 
 target_link_libraries(
     google_unit_test
@@ -13,7 +18,6 @@ target_link_libraries(
             GTest::gmock
             pthread # pthread is needed on Unix-like systems
             Imager)
-
 target_include_directories(google_unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 # if(CMAKE_BUILD_TYPE MATCHES "Debug") target_compile_options( google_unit_test
@@ -28,8 +32,8 @@ add_executable(
     geometric/catch2/reflectance.test.cpp
     solid_object/catch2/object_list_hit.test.cpp
     solid_object/catch2/single_object_hit.test.cpp
-	camera/catch2/view_matrix.test.cpp
-	camera/catch2/viewport.test.cpp
+    camera/catch2/view_matrix.test.cpp
+    camera/catch2/viewport.test.cpp
     vector/vector.test.cpp)
 
 target_link_libraries(
