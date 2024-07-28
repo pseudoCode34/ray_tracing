@@ -1,0 +1,126 @@
+name: Conan CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+    name: "${{ matrix.config.os }}, C++${{ matrix.cppstd }} ${{ matrix.config.compiler.type }}-${{matrix.config.compiler.version}} ${{ matrix.build_type }}"
+    runs-on: ${{ matrix.config.os }}
+    strategy:
+      matrix:
+        cppstd: [ 20, 23 ]
+        config:
+          - {
+            os: macOS-14,
+            compiler:
+              {
+                type: Clang,
+                version: 17,
+                cc: "/opt/homebrew/opt/llvm@17/bin/clang",
+                cxx: "/opt/homebrew/opt/llvm@17/bin/clang++",
+              },
+          }
+        test_type: [ unit, integration ]
+        build_type: [ "RelWithDebInfo", "Debug" ]
+
+    env:
+      CC: ${{ matrix.config.compiler.cc }}
+      CXX: ${{ matrix.config.compiler.cxx }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - run: echo "cache_id=$(/bin/date -u "+%Y%m%d")" >> $GITHUB_ENV
+      - name: Cache Conan data
+        uses: actions/cache@v4
+        if: always()
+        env:
+          cache-name: cache-conan-data
+        with:
+          path: ~/.conan2/profiles
+          key: conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.cppstd }}-${{ env.cache_id }}
+          restore-keys: |
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-${{ matrix.cppstd }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}-${{ matrix.config.compiler.version }}-
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}-${{ matrix.build_type }}
+            conan-${{ matrix.config.os }}-${{ matrix.config.compiler.type }}
+      - name: Install system package manager
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          /bin/bash -c \
+          "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+          echo 'eval $(/opt/homebrew/bin/brew shellenv)' >> /Users/$USER/.zprofile   
+          eval $(/opt/homebrew/bin/brew shellenv)
+      - name: Install Clang
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install llvm@${{matrix.config.compiler.version}}
+
+      - name: Install dependencies via Brew
+        if:  runner.os == 'macOS'
+        shell: bash
+        run: |
+          xargs brew install < brew_requirement.txt
+
+      - name: Install Conan via Homebrew
+        if: runner.os == 'macOS'
+        shell: bash
+        run: |
+          brew install conan
+      - name: Set up Python
+        if: runner.os != 'macOS'
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.x
+
+      - name: Install Conan via pip3
+        if: runner.os != 'macOS'
+        shell: bash
+        run: |
+          pip3 install -U conan
+
+      - name: Generate a Conan profile
+        if: matrix.config.compiler.type == 'CLANG' && runner.os == 'macOS'
+        shell: bash
+        run: |
+          conan profile detect --force
+          if [[ "${{ matrix.config.compiler.type }}" == "CLANG" ]]; then
+            sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.libcxx=.*/compiler.libcxx=${{ matrix.config.lib }}/' ~/.conan2/profiles/default
+          fi
+          sed -i.backup '/^\[settings\]$/,/^\[/ s/^compiler.cppstd=.*/compiler.cppstd=${{ matrix.cppstd }}/' ~/.conan2/profiles/default
+          sed -i.backup '/^\[settings\]$/,/^\[/ s/^build_type=.*/build_type=${{ matrix.build_type }}/' ~/.conan2/profiles/default
+          conan profile show -pr default
+
+      - name: Get number of CPU cores on the system
+        run: |
+          if [[ "${{ runner.os }}" == "Linux" ]]; then
+            echo "threads=$(nproc)" >> $GITHUB_ENV
+          elif [[ "${{ runner.os }}" == "macOS" ]]; then
+            echo "threads=$(sysctl -n hw.ncpu)" >> $GITHUB_ENV
+          fi
+
+      - run: echo "BUILD_TYPE=$(echo '${{matrix.build_type}}' | tr '[:upper:]' '[:lower:]')"  >> $GITHUB_ENV
+
+      - name: Configure
+        shell: bash
+        run: |
+          conan install . -b=missing
+          cmake --preset conan-${{env.BUILD_TYPE}}
+
+      - name: Build
+        run: |
+          cmake --build --preset=conan-${{env.BUILD_TYPE}} \
+          --parallel ${{env.threads}}
+
+      - name: Catch2 tests
+        if: matrix.test_type == 'unit'
+        run: |
+          cmake --build --preset=conan-${{env.BUILD_TYPE}} \
+          --parallel=${{env.threads}} \
+          --target=catch2_unit_test
+
