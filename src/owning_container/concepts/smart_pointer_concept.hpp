@@ -2,7 +2,6 @@
 #define SMART_POINTER_CONCEPT_HPP
 
 #include <concepts>
-#include <gsl/gsl-lite.hpp>
 #include <type_traits>
 
 namespace raytracing {
@@ -14,7 +13,7 @@ concept nullptr_default_construction
 
 
 template <typename T>
-concept is_smart_pointer = requires(const T &t) {
+concept is_smart_pointer = requires(T t) {
 	{
 		t.operator*()
 	} -> std::same_as<std::add_lvalue_reference_t<typename T::element_type>>;

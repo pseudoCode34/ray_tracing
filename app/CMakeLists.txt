@@ -10,4 +10,4 @@ target_compile_options(
 target_include_directories(${PROJECT_NAME} PUBLIC ${PROJECT_SOURCE_DIR}/examples
                                                   ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(${PROJECT_NAME} PRIVATE Example Imager)
+target_link_libraries(${PROJECT_NAME} PRIVATE Example ray_tracing)

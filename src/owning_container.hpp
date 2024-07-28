@@ -5,6 +5,7 @@
 #include "owning_container/concepts/smart_pointer_concept.hpp"
 
 #include <algorithm>
+#include <concepts>
 #include <memory>
 #include <optional>
 #include <vector>
@@ -12,7 +13,7 @@
 namespace raytracing {
 template <class T, template <typename...> class Owner = std::unique_ptr,
 		  template <typename...> class Container = std::vector>
-class OwningContainer {
+class [[nodiscard]] OwningContainer {
 public:
 	using element_type = T;
 	using pointer      = Owner<element_type>;
@@ -37,21 +38,20 @@ public:
 		return *container_[i].get();
 	}
 
-	constexpr auto transform(std::invocable<element_type> auto &&op) const {
-		return container_
-			   | std::ranges::transform(std::forward<decltype(op)>(op));
+	template <std::invocable<element_type> Func>
+	constexpr auto transform(Func &&op) const {
+		return container_ | std::ranges::transform(std::forward<Func>(op));
 	}
 
-	constexpr bool any_match(std::predicate<pointer> auto &&pred) const {
-		return std::ranges::any_of(container_,
-								   std::forward<decltype(pred)>(pred));
+	template <std::predicate<pointer> Pred>
+	constexpr bool any_match(Pred &&pred) const {
+		return std::ranges::any_of(container_, std::forward<Pred>(pred));
 	}
 
-	constexpr std::optional<element_type *>
-	find_any(std::predicate<pointer> auto &&pred) const {
+	template <std::predicate<pointer> Pred>
+	constexpr std::optional<element_type *> find_any(Pred &&pred) const {
 		const auto result
-			= std::ranges::find_if(container_,
-								   std::forward<decltype(pred)>(pred));
+			= std::ranges::find_if(container_, std::forward<Pred>(pred));
 		if (result != std::ranges::end(container_)) return std::nullopt;
 		return (*result).get();
 	}
