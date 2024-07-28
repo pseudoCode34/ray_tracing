@@ -1,13 +1,11 @@
-add_executable(
-    google_unit_test EXCLUDE_FROM_ALL
-    algebra/linear_equation_system.cpp geometric/gtest/refract.test.cpp
-    owning_collection/construction.test.cpp lodepng/encode.cpp)
+add_executable(google_unit_test EXCLUDE_FROM_ALL
+               owning_collection/construction.test.cpp)
 
 target_compile_options(
     google_unit_test
     PRIVATE $<$<CXX_COMPILER_ID:MSVC>:/W4 /WX>
             $<$<NOT:$<CXX_COMPILER_ID:MSVC>>:-Wall -Wextra -pedantic
-            -Werror=sign-conversion)
+            -Werror=sign-conversion>)
 
 target_link_options(google_unit_test PRIVATE -fsanitize=undefined)
 
@@ -17,7 +15,7 @@ target_link_libraries(
             GTest::gtest_main
             GTest::gmock
             pthread # pthread is needed on Unix-like systems
-            Imager)
+            ray_tracing)
 target_include_directories(google_unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 # if(CMAKE_BUILD_TYPE MATCHES "Debug") target_compile_options( google_unit_test
@@ -26,21 +24,15 @@ target_include_directories(google_unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
 add_executable(
     catch2_unit_test EXCLUDE_FROM_ALL
-    camera/catch2/view_matrix.test.cpp
-    geometric/catch2/reflect.test.cpp
-    geometric/catch2/refract.test.cpp
-    geometric/catch2/reflectance.test.cpp
-    solid_object/catch2/object_list_hit.test.cpp
-    solid_object/catch2/single_object_hit.test.cpp
-    camera/catch2/view_matrix.test.cpp
-    camera/catch2/viewport.test.cpp
-    vector/vector.test.cpp)
+    camera/catch2/view_matrix.test.cpp geometric/catch2/reflect.test.cpp
+    geometric/catch2/refract.test.cpp geometric/catch2/reflectance.test.cpp
+    camera/catch2/view_matrix.test.cpp camera/catch2/viewport.test.cpp)
 
 target_link_libraries(
     catch2_unit_test
     PRIVATE Catch2::Catch2WithMain pthread # pthread is needed on Unix-like
                                            # systems
-            Imager)
+            ray_tracing)
 
 target_include_directories(catch2_unit_test PRIVATE ${PROJECT_SOURCE_DIR}/src)
 
@@ -50,11 +42,4 @@ if(CMAKE_BUILD_TYPE MATCHES "Debug")
         # -fsanitize=leak
     )
     target_link_options(catch2_unit_test PRIVATE -fsanitize=undefined)
-endif()
-
-if(BUILD_TESTING)
-    # Add a custom target to run the tests using 'make test'
-    add_test(NAME google_unit_test COMMAND google_unit_test)
-    add_test(NAME catch2_unit_test COMMAND catch2_unit_test PROPERTIES TIMEOUT
-                                           10)
 endif()

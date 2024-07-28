@@ -2,8 +2,10 @@
 // Created by Nguyễn Khắc Trường on 04/05/2024.
 //
 
-#include "geometric.hpp"
-#include "vector3f.hpp"
+#include "spatial/geometric/refract.hpp"
+
+#include "random/eigen_vector.hpp"
+#include "spatial/primitive.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
@@ -28,10 +30,11 @@ SCENARIO("Refracted ray test with an internal light ray",
 
 		AND_GIVEN(
 			"A normal vector and a light ray near the normal of the surface") {
-			Vector3f incident, normal;
+			Vector3Df incident, normal;
 			float incident_angle;
 			do {
-				incident = random_unit_vector(), normal = random_unit_vector();
+				incident       = random_unit_vector<float, 3>();
+				normal         = random_unit_vector<float, 3>();
 				incident_angle = std::acos(incident.dot(normal));
 			} while (incident_angle > critical_angle);
 
@@ -43,7 +46,7 @@ SCENARIO("Refracted ray test with an internal light ray",
 				CHECK(incident_angle < critical_angle);
 
 				WHEN("refract() is called") {
-					const Vector3f refracted_dir
+					const Vector3Df refracted_dir
 						= refract(incident, -normal, eta);
 					float actual_refracted = acos(refracted_dir.dot(normal));
 
@@ -81,10 +84,11 @@ SCENARIO("Specical case of total internal reflection in refraction test",
 	float critical_angle = std::asin(1 / eta);
 
 	AND_GIVEN("A normal vector and a light ray near the surface of 2 media") {
-		Vector3f incident, normal;
+		Vector3Df incident, normal;
 		float incident_angle;
 		do {
-			incident = random_unit_vector(), normal = random_unit_vector();
+			incident       = random_unit_vector<float, 3>(),
+			normal         = random_unit_vector<float, 3>();
 			incident_angle = acos(incident.dot(normal));
 		} while (incident_angle < critical_angle || incident_angle > pi / 2);
 
@@ -96,8 +100,8 @@ SCENARIO("Specical case of total internal reflection in refraction test",
 			CHECK(incident_angle > critical_angle);
 
 			AND_WHEN("refract() is called") {
-				const Vector3f refracted_dir = refract(incident, -normal, eta);
-				float actual_refracted       = acos(refracted_dir.dot(normal));
+				const Vector3Df refracted_dir = refract(incident, -normal, eta);
+				float actual_refracted        = acos(refracted_dir.dot(normal));
 
 				THEN("Total internal reflection happens") {
 					CAPTURE(incident,
@@ -124,11 +128,12 @@ SCENARIO("Refracted ray test with an external incident ray and a normal vector "
 		Catch::Matchers::IsNaN;
 	using std::asin, std::sin, std::acos, std::fabs;
 
-	GIVEN("A normal vector and a light ray.Both are normalised") {
-		Vector3f incident, normal;
+	GIVEN("A normal vector and a light ray. Both are normalised") {
+		Vector3Df incident, normal;
 		float cos_incidence;
 		do {
-			incident = random_unit_vector(), normal = random_unit_vector();
+			incident      = random_unit_vector<float, 3>(),
+			normal        = random_unit_vector<float, 3>();
 			cos_incidence = incident.dot(normal);
 		} while (cos_incidence > 0);
 
@@ -149,8 +154,8 @@ SCENARIO("Refracted ray test with an external incident ray and a normal vector "
 			}
 
 			WHEN("refract() is called") {
-				const Vector3f refracted_dir = refract(incident, normal, eta);
-				float actual_refracted       = acos(-refracted_dir.dot(normal));
+				const Vector3Df refracted_dir = refract(incident, normal, eta);
+				float actual_refracted = acos(-refracted_dir.dot(normal));
 
 				THEN("No total internal reflection") {
 					CAPTURE(incident,

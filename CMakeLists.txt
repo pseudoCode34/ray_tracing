@@ -74,7 +74,6 @@ if(PROJECT_IS_TOP_LEVEL)
 
     # Let's ensure -std=c++xx instead of -std=g++xx
     set(CMAKE_CXX_EXTENSIONS OFF)
-    enable_testing()
     # Testing only available if this is the main app.
     add_subdirectory(tests)
 endif()

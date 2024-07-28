@@ -1,5 +1,5 @@
-#include "camera.hpp"
-#include "vector3f.hpp"
+#include "spatial/camera.hpp"
+#include "spatial/primitive.hpp"
 
 #include <catch2/catch_test_macros.hpp>
 
@@ -8,9 +8,9 @@ SCENARIO("Camera member function update_view_matrix() test",
 		 "[Camera][glm::lookAt]") {
 	GIVEN("3 world orthonormal basis vectors") {
 		Camera under_test;
-		under_test.set_position(Vector3f{1, 2, 3});
-		under_test.set_view_center(Vector3f{-3, 4, 1});
-		under_test.set_world_up(Vector3f::UnitY());
+		under_test.set_position(Vector3Df{1, 2, 3});
+		under_test.set_view_center(Vector3Df{-3, 4, 1});
+		under_test.set_world_up(Vector3Df::UnitY());
 
 		// clang-format on
 		WHEN("update_view_matrix() is called()") {

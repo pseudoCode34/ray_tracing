@@ -1,11 +1,12 @@
-#include "geometric.hpp"
-#include "random.hpp"
-
 #include <catch2/catch_test_macros.hpp>
 #include <catch2/generators/catch_generators.hpp>
 #include <catch2/generators/catch_generators_adapters.hpp>
 #include <catch2/generators/catch_generators_random.hpp>
 #include <catch2/matchers/catch_matchers_floating_point.hpp>
+
+#include "spatial/geometric/reflectance.hpp"
+#include "random/eigen_vector.hpp"
+#include "spatial/primitive.hpp"
 
 namespace raytracing {
 
@@ -17,8 +18,9 @@ SCENARIO("Reflectance test", "[reflectance]") {
 		float eta = GENERATE(take(10, random(0.f, 1.f)));
 
 		AND_GIVEN("A normal vector and a light ray. Both are normalised") {
-			const Vector3f incident = random_unit_vector();
-			Vector3f normal         = random_unit_vector();
+			const Vector3Df incident
+				= random_unit_vector<float, 3>(-10.f, 10.f);
+			Vector3Df normal = random_unit_vector<float, 3>(-10.f, 10.f);
 
 			if (bool is_internal_ray = incident.dot(normal) > 0;
 				is_internal_ray) {
