@@ -15,4 +15,4 @@ target_compile_options(
 # Assuming this is meant to be a public directory
 target_include_directories(Example PUBLIC ${PROJECT_SOURCE_DIR}/src)
 
-target_link_libraries(Example lodepng Imager )
+target_link_libraries(Example lodepng ray_tracing )

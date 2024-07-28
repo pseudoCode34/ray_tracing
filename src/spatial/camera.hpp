@@ -1,31 +1,17 @@
 #ifndef CAMERA_HPP
 #define CAMERA_HPP
 
-#include "quantity/angle.hpp"
-#include "quantity/pixel.hpp"
+#include "quantity.hpp"
 #include "spatial/primitive.hpp"
 #include "viewport.hpp"
 
 #include <gsl/gsl-lite.hpp>
-#include <mp-units/bits/magnitude.h>
-#include <mp-units/bits/quantity_concepts.h>
-#include <mp-units/quantity.h>
-#include <mp-units/quantity_spec.h>
-#include <mp-units/reference.h>
-#include <mp-units/systems/angular/angular.h>
 #include <mp-units/systems/isq/space_and_time.h>
 
 namespace raytracing {
 
 class Camera {
 public:
-	Camera()                          = default;
-	Camera(const Camera &)            = default;
-	Camera(Camera &&)                 = default;
-	Camera &operator=(const Camera &) = default;
-	Camera &operator=(Camera &&)      = default;
-	~Camera() noexcept                = default;
-
 	enum class ProjectionType { PERSPECTIVE, ORTHOGONAL };
 
 	Camera &set_position(Point3fConstRef eye);
@@ -38,11 +24,12 @@ public:
 
 	[[nodiscard]] const Eigen::Projective3f &get_projection_matrix() const;
 
+	void set_aspect_ratio(float aspect_ratio);
+
 	void perspective(
 		mp_units::QuantityOf<mp_units::angular::angle> auto field_of_view,
 		float aspect_ratio, float near_plane, float far_plane) {
-		gsl_Expects(near_plane > 0);
-		gsl_Expects(far_plane > 0);
+		gsl_Expects(far_plane > near_plane && near_plane > 0);
 
 		projection_type_ = ProjectionType::PERSPECTIVE;
 		vfov_            = field_of_view;
@@ -60,6 +47,8 @@ public:
 			= 2 * near_plane * far_plane / (near_plane - far_plane);
 		projection_matrix_(3, 2) = -1;
 		projection_matrix_(3, 3) = 0;
+
+		projection_is_uptodate_ = true;
 	}
 
 	void ortho(float left, float right, float bottom, float top,
@@ -69,6 +58,7 @@ public:
 
 	Viewport set_viewport(
 		mp_units::QuantityOf<mp_units::isq::height> auto image_height) const {
+		gsl_Expects(projection_is_uptodate_);
 		gsl_Expects(view_is_uptodate_);
 
 		auto half_height = tan(vfov_ / 2) * far_dist_;
@@ -98,14 +88,18 @@ public:
 	[[nodiscard]] Point3Df orig() const;
 
 private:
-	Point3Df eye_       = -Point3Df::UnitZ(); // Point camera is looking from
-	Point3Df center_    = Point3Df::Zero();   // Point camera is looking at
-	Vector3Df world_up_ = Vector3Df::UnitY(); // Camera-relative "up" direction
+	// The point where camera is looking from
+	Point3Df eye_ = -Point3Df::UnitZ();
+	// The point where camera is looking at
+	Point3Df center_ = Point3Df::Zero();
+	// Camera-relative "up" direction
+	Vector3Df world_up_ = Vector3Df::UnitY();
 
 	mutable Eigen::Projective3f projection_matrix_;
 	mutable Eigen::AffineCompact3f view_matrix_;
 
-	mutable bool view_is_uptodate_ = true;
+	mutable bool projection_is_uptodate_ = true;
+	mutable bool view_is_uptodate_       = true;
 
 	// Vertical view angle (field of view)
 	DegreeAnglef vfov_ = 90 * mp_units::angular::degree;

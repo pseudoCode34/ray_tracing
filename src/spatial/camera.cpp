@@ -22,6 +22,7 @@ Camera &Camera::set_world_up(Vector3fConstRef world_up) {
 }
 
 const Eigen::AffineCompact3f &Camera::get_view_matrix() const {
+	gsl_Expects(view_is_uptodate_);
 	return view_matrix_;
 }
 
@@ -37,6 +38,8 @@ void Camera::ortho(float left, float right, float bottom, float top,
 	projection_matrix_(3, 1) = -(top + bottom) / (top - bottom);
 	projection_matrix_(3, 2)
 		= -(far_plane + near_plane) / (far_plane - near_plane);
+
+	projection_is_uptodate_ = true;
 }
 
 void Camera::update_view_matrix() const {
@@ -69,10 +72,19 @@ Point3Df Camera::orig() const {
 }
 
 const Eigen::Projective3f &Camera::get_projection_matrix() const {
+	gsl_Expects(projection_is_uptodate_);
 	return projection_matrix_;
 }
 
 void Camera::set_defocus_angle(DegreeAnglef defocus_angle) {
 	defocus_angle_ = defocus_angle;
+}
+
+void Camera::set_aspect_ratio(float aspect_ratio) {
+	gsl_Expects(projection_type_ == ProjectionType::PERSPECTIVE);
+	gsl_Expects(aspect_ratio > 0);
+
+	aspect_ratio_           = aspect_ratio;
+	projection_is_uptodate_ = false;
 }
 } // namespace raytracing
